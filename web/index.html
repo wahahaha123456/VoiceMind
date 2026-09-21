@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="0ZLUGm1ALKeeVXWMw9Jx22">
+<head data-page-node-id="8AtjGZB34XxbojqTQqHlIL">
+    <meta charset="UTF-8" data-page-node-id="MmaUAYOyOeq9kZW3Du1Bfa">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="fCFIzeo30wYzN0ew8DUTLw">
+    <title>VoiceMind 声智助手</title>
+    <!-- 空 favicon：避免浏览器请求 /favicon.ico 产生 404 噪音 -->
+    <link rel="icon" href="data:," data-page-node-id="4LR0lkRdWbMMAM7KsPjxMG">
+    <style>
+        :root {
+            --bg: #0A0A0B;
+            --card: #141416;
+            --input: #1C1C1F;
+            --border: #2A2A2E;
+            --text: #EDEDED;
+            --text-dim: #8B8B8F;
+            --brand: #4F7CFF;
+            --brand-dim: rgba(79, 124, 255, 0.12);
+            --ok: #22C55E;
+            --err: #EF4444;
+            --warn: #F59E0B;
+            --radius: 6px;
+            --mono: "JetBrains Mono", "Consolas", monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .icon { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; }
+
+        /* ==================== 顶部导航栏（56px） ==================== */
+        .topbar {
+            height: 56px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-logo {
+            width: 26px; height: 26px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--brand);
+            border-radius: var(--radius);
+            color: #fff;
+        }
+        .brand-logo .icon { width: 15px; height: 15px; }
+        .brand-name { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
+        .brand-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 6px;
+            margin-left: 2px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .svc-chip {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 12px; color: var(--text-dim);
+        }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
+        .dot.ok { background: var(--ok); }
+        .dot.err { background: var(--err); }
+        .dot.wait { background: var(--warn); }
+
+        /* ==================== 主体布局 ==================== */
+        .layout { flex: 1; display: flex; min-height: 0; }
+
+        /* 左侧边栏（200px） */
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border);
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .side-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 6px 10px 8px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            color: var(--text-dim);
+            font-size: 14px;
+            cursor: pointer;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            font-family: inherit;
+            transition: color 0.15s, background 0.15s;
+        }
+        .nav-item:hover { color: var(--text); background: var(--input); }
+        .nav-item.active {
+            color: var(--text);
+            background: var(--input);
+            border-color: var(--border);
+        }
+        .nav-item.active .icon { color: var(--brand); }
+        .sidebar-foot {
+            margin-top: auto;
+            padding: 10px;
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.7;
+            border-top: 1px solid var(--border);
+        }
+
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px 40px;
+        }
+        .page { max-width: 900px; margin: 0 auto; }
+        .page-head { margin-bottom: 20px; }
+        .page-title { font-size: 20px; font-weight: 600; }
+        .page-desc { font-size: 13px; color: var(--text-dim); margin-top: 6px; line-height: 1.6; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        /* 状态条（模型加载 / 麦克风权限） */
+        .status-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--card);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+        }
+        .status-line .icon { margin-top: 2px; color: var(--text-dim); }
+        .status-line.ok { color: var(--text); border-color: rgba(34,197,94,0.35); }
+        .status-line.ok .icon { color: var(--ok); }
+        .status-line.wait { border-color: rgba(245,158,11,0.35); }
+        .status-line.wait .icon { color: var(--warn); }
+        .status-line.err { border-color: rgba(239,68,68,0.35); }
+        .status-line.err .icon { color: var(--err); }
+
+        /* 上传区 */
+        .upload-area {
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            background: var(--card);
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.15s, background 0.15s;
+            margin-bottom: 14px;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--brand);
+            background: var(--brand-dim);
+        }
+        .upload-area .icon-lg { width: 28px; height: 28px; color: var(--text-dim); }
+        .upload-area.dragover .icon-lg, .upload-area:hover .icon-lg { color: var(--brand); }
+        .upload-text { margin-top: 10px; font-size: 14px; color: var(--text); }
+        .upload-hint { margin-top: 6px; font-size: 12px; color: var(--text-dim); }
+
+        .file-info {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            margin-bottom: 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            color: var(--text);
+        }
+        .file-info.show { display: flex; }
+        .file-info .icon { color: var(--ok); }
+        .file-info .fname { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+        /* 按钮：边框 + 文字色，不用大色块 */
+        button { font-family: inherit; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--input);
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+        .btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { border-color: var(--brand); background: var(--brand); color: #fff; }
+        .btn-primary:hover:not(:disabled) { background: #3F6AE6; color: #fff; border-color: #3F6AE6; }
+        .btn-danger { border-color: rgba(239,68,68,0.5); background: transparent; color: var(--err); }
+        .btn-danger:hover:not(:disabled) { border-color: var(--err); color: var(--err); background: rgba(239,68,68,0.08); }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .btn-block { width: 100%; padding: 10px; }
+
+        /* 表单 */
+        .form-row { margin-bottom: 14px; text-align: left; }
+        .form-row label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        .form-row label b { color: var(--text); font-weight: 500; }
+        .form-row input[type="text"] {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .form-row input[type="text"]::placeholder { color: #5A5A5E; }
+        .form-row input[type="text"]:focus { border-color: var(--brand); }
+        .form-row input[type="range"] { width: 100%; accent-color: var(--brand); }
+        .form-row .mono-val { font-family: var(--mono); font-size: 12px; color: var(--text); }
+        .batch-box {
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+        }
+        .batch-hint { color: var(--text-dim); font-size: 12px; margin-top: 8px; line-height: 1.6; }
+
+        /* 字幕工作台：紧凑表单 */
+        .sub-row { margin-bottom: 12px; text-align: left; }
+        .sub-row:last-child { margin-bottom: 0; }
+        .sub-row label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 5px; }
+        .sub-dim { color: #6B6B70; font-weight: 400; }
+        .sub-inline { display: flex; gap: 8px; }
+        .sub-inline .btn { white-space: nowrap; flex-shrink: 0; }
+        .sub-row input[type="text"], .sub-row input[type="number"] {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .sub-row input::placeholder { color: #5A5A5E; }
+        .sub-row input:focus { border-color: var(--brand); }
+        .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .sub-help { margin-top: 12px; font-size: 12px; color: var(--text-dim); }
+        .sub-help summary { cursor: pointer; user-select: none; color: var(--text-dim); }
+        .sub-help summary:hover { color: var(--text); }
+        .sub-help p { margin: 8px 0 0; line-height: 1.7; }
+
+        /* ---------- 语音问答页 ---------- */
+        .qa-head { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+        /* 步骤序号圆点：1 知识库 / 2 提问，让操作顺序一目了然 */
+        .qa-step {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; margin-right: 7px; border-radius: 50%;
+            background: var(--brand-dim); color: var(--brand);
+            font-size: 11px; font-family: var(--mono);
+        }
+        textarea {
+            width: 100%; box-sizing: border-box; padding: 10px 12px;
+            background: var(--input); border: 1px solid var(--border);
+            border-radius: var(--radius); color: var(--text);
+            font-size: 13px; font-family: inherit; line-height: 1.6; resize: vertical;
+        }
+        textarea:focus { outline: none; border-color: var(--brand); }
+        textarea::placeholder { color: #5A5A5E; }
+        .qa-kb-item {
+            display: flex; justify-content: space-between; gap: 10px;
+            padding: 7px 10px; margin-top: 6px; font-size: 12px;
+            background: var(--input); border-radius: var(--radius);
+        }
+        .qa-answer { font-size: 14px; line-height: 1.85; color: var(--text); white-space: pre-wrap; }
+        .qa-question {
+            font-size: 13px; color: var(--text-dim);
+            padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
+        }
+        .qa-hit {
+            margin-top: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.65;
+            background: var(--input); border-left: 2px solid var(--brand); border-radius: var(--radius);
+            color: var(--text-dim);
+        }
+        .qa-hit b { color: var(--text); font-weight: 400; }
+        .qa-recording { animation: qaPulse 1.2s ease-in-out infinite; }
+        @keyframes qaPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        /* 实时录音 */
+        .rec-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-dim);
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+        }
+        .rec-status.ok { color: var(--ok); }
+        .rec-status.err { color: var(--err); }
+        .rec-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+        .rec-status.ok .rec-dot { background: var(--ok); animation: pulse 1.6s infinite; }
+        .rec-status.err .rec-dot { background: var(--err); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 结果区 */
+        .result {
+            display: none;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-top: 6px;
+        }
+        .result.show { display: block; }
+        .result-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .result-label { font-size: 12px; color: var(--text-dim); letter-spacing: 0.3px; }
+        .result-text {
+            font-size: 15px;
+            line-height: 1.7;
+            word-break: break-all;
+            color: var(--text);
+        }
+        .loading { text-align: center; color: var(--text-dim); font-size: 14px; padding: 24px; }
+        .loading::after { content: ''; animation: dots 1.5s infinite; }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+        .result.error { border-color: rgba(239,68,68,0.4); }
+        .result.error .result-label { color: var(--err); }
+        .empty-hint { color: var(--text-dim); text-align: center; padding: 16px; font-size: 13px; }
+
+        /* 说话人分段 */
+        .segment {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .segment:last-child { margin-bottom: 0; }
+        .segment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .speaker-badge {
+            font-size: 11px;
+            font-family: var(--mono);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1px 7px;
+        }
+        .speaker-badge.spk-0 { color: var(--brand); border-color: rgba(79,124,255,0.5); }
+        .speaker-badge.spk-1 { color: #EC4899; border-color: rgba(236,72,153,0.5); }
+        .speaker-badge.spk-2 { color: #14B8A6; border-color: rgba(20,184,166,0.5); }
+        .speaker-badge.spk-3 { color: var(--warn); border-color: rgba(245,158,11,0.5); }
+        .seg-time { color: var(--text-dim); font-size: 11px; font-family: var(--mono); }
+        .seg-text { font-size: 14px; line-height: 1.7; }
+
+        /* 检索匹配项 */
+        .match-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: left;
+        }
+        .match-item:last-child { margin-bottom: 0; }
+        .match-file {
+            font-size: 13px; color: var(--text); font-weight: 500;
+            background: var(--card); border-color: var(--border);
+        }
+        .match-header {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 8px; margin-bottom: 5px; flex-wrap: wrap;
+        }
+        .match-kw {
+            display: inline-block;
+            font-size: 11px;
+            font-family: var(--mono);
+            padding: 1px 7px;
+            border-radius: 4px;
+            color: var(--brand);
+            border: 1px solid rgba(79,124,255,0.5);
+            background: var(--brand-dim);
+        }
+        .match-kw.fuzzy { color: var(--warn); border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.1); }
+        .match-time { color: var(--text-dim); font-size: 11px; font-family: var(--mono); }
+        .match-sim { color: var(--text-dim); font-size: 11px; font-family: var(--mono); }
+        .match-text { font-size: 14px; line-height: 1.7; word-break: break-all; }
+        .match-text mark { background: rgba(79,124,255,0.25); color: var(--text); padding: 0 2px; border-radius: 3px; }
+
+        /* 实时字幕 */
+        .subs {
+            margin-bottom: 14px;
+            padding: 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .subs .sub-line {
+            font-size: 14px;
+            line-height: 1.7;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .subs .sub-line:last-child { border-bottom: none; }
+        .subs .sub-line.partial { color: var(--text-dim); }
+        .subs .sub-line.final-line { color: var(--text); }
+        .subs .sub-time {
+            color: var(--text-dim);
+            font-size: 11px;
+            font-family: var(--mono);
+            margin-right: 8px;
+        }
+        .subs .sub-empty { color: var(--text-dim); text-align: center; font-size: 13px; }
+        .subs .sub-text { margin-left: 4px; }
+        /* 正在累积的草稿行：末尾闪烁光标表示"这句话还没说完" */
+        .subs .sub-line.partial .sub-text::after {
+            content: '▍';
+            color: var(--brand);
+            animation: blink 1s steps(1) infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .export-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+        /* ==================== 底部状态栏（32px） ==================== */
+        .statusbar {
+            height: 32px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 16px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            font-family: var(--mono);
+            color: var(--text-dim);
+            background: var(--bg);
+        }
+        .statusbar .sb-item { display: flex; align-items: center; gap: 6px; }
+        .statusbar .dot { width: 6px; height: 6px; }
+        .statusbar .sb-right { margin-left: auto; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body data-page-node-id="gsqom8BLvWFdkaQWDH54bS">
+    <!-- ==================== SVG 图标集（symbol 定义，use 引用） ==================== -->
+    <svg style="display: none;" aria-hidden="true" data-page-node-id="4doN1TPLcyVusHQP4IxczG">
+        <symbol id="icon-logo" viewBox="0 0 24 24" data-page-node-id="xjmasUfkAiFkb1yx0MwVoR">
+            <path d="M4 12h2m-2 0c0 4.4 3.6 8 8 8m-8-8c0-4.4 3.6-8 8-8m0 0c2.5 0 4.7 1.1 6.2 2.9M12 4v3m0 14c1.4 0 2.7-.3 3.8-1M12 21v-3m6-9.5c.6 1 1 2.2 1 3.5 0 2.2-.9 4.2-2.3 5.7" stroke="currentColor" fill="none" stroke-width="1.6" stroke-linecap="round" data-page-node-id="JdqdIlFN4tZ5AdKyDnJCBQ"/>
+        </symbol>
+        <symbol id="icon-mic" viewBox="0 0 24 24" data-page-node-id="Vx91fF5IpvoZOdetGXgpWL">
+            <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z" data-page-node-id="Up627VjbEAmcbyQvHZVBpq"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="pzTmagzAkSZkhy8b0pQqpZ"/>
+        </symbol>
+        <symbol id="icon-users" viewBox="0 0 24 24" data-page-node-id="gVTQRDNpUjuxXDbtsuvYmz">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="s1lKfSGdM8qwWF522EWyM5"/>
+        </symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24" data-page-node-id="JV60GjR7m6fsbUYE4jBKVl">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="go22kfT4beihOCLyFlyVdc"/>
+            <path d="m21 21-4.35-4.35" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="uvdu2Cd3ScTTjH961QUnHu"/>
+        </symbol>
+        <symbol id="icon-file" viewBox="0 0 24 24" data-page-node-id="RS2OoUKgE6p74EN2oVMmWI">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="lL6Bwb9h79Ey7sxXdMdvf1"/>
+            <path d="M14 2v6h6" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="XMPlKEZWfD1c1tgEu7LENl"/>
+        </symbol>
+        <symbol id="icon-upload" viewBox="0 0 24 24" data-page-node-id="G9uHcETAVlk2vsywU1hhXP">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="I91pxNAomOEEMqarYxYxCn"/>
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24" data-page-node-id="tL2TSzE4EKPofnhBbGl25M">
+            <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="bPEBDkTzoOaA4VFHJx6OtF"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="PN6IKxS2WtKkPlVGJkVRJ2"/>
+        </symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24" data-page-node-id="ZTDo7IL02ZGPKyiUuI6xMb">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="JlTima9coE93zazi3z4lwU"/>
+        </symbol>
+        <symbol id="icon-play" viewBox="0 0 24 24" data-page-node-id="pfKDzT4DYOyci3rXyHYddF">
+            <path d="M8 5.14v14l11-7-11-7z" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="H7AwyhR8QFi9mHtKa8aDII"/>
+        </symbol>
+        <symbol id="icon-stop" viewBox="0 0 24 24" data-page-node-id="4yZxYgckCeE6Gpk4aDzk62">
+            <rect x="6" y="6" width="12" height="12" rx="1" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="sIuj3xutS2p0JebERa84Rb"/>
+        </symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24" data-page-node-id="YenLsGpiMRPCH8JWdevsOd">
+            <path d="M20 6 9 17l-5-5" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="KD19FF7q0kZdB1WHmkIGQo"/>
+        </symbol>
+        <symbol id="icon-alert" viewBox="0 0 24 24" data-page-node-id="nAeOEX9loK04LArRxh4mul">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="p9VKWKtd1w4a0r084erXMS"/>
+            <path d="M12 8v4M12 16h.01" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" data-page-node-id="dOArEGQ3gb4lprznnTRyAM"/>
+        </symbol>
+        <symbol id="icon-clock" viewBox="0 0 24 24" data-page-node-id="Q5nzjB2oUe5XzyI4HARTWK">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="uSYAaawwsNibhb3WEFuUEy"/>
+            <path d="M12 7v5l3 3" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" data-page-node-id="K9GaK7peYypWmNaWW9DDlD"/>
+        </symbol>
+        <symbol id="icon-folder" viewBox="0 0 24 24" data-page-node-id="E0mjbIWSGVt1IL7lKzKtFb">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke="currentColor" fill="none" stroke-width="1.5" data-page-node-id="o5afDmYtRD4C2taBVUJHWf"/>
+        </symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" data-page-node-id="j7uCW8sJMtKAu4GdpMoIwn">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" data-page-node-id="26RdpG1angIDD3PK8BxgAk"/>
+        </symbol>
+        <symbol id="icon-wave" viewBox="0 0 24 24" data-page-node-id="rV9IRetEFTEhZHxOltp39A">
+            <path d="M2 12h2m2-5v10m4-14v18m4-14v10m4-7v4m4-2h2" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" data-page-node-id="fNCAOcEsv49TUs8pdVEHIh"/>
+        </symbol>
+    </svg>
+
+    <!-- ==================== 顶部导航栏 ==================== -->
+    <header class="topbar" data-page-node-id="oirLp8ukcvLeqJcZMVE88v">
+        <div class="brand" data-page-node-id="PE74EP5IwYNff7L1WsyjWq">
+            <span class="brand-logo" data-page-node-id="p4nmKTAVJTbxl24hc9vCR3"><svg class="icon" data-page-node-id="NhLWIUGuGr8r2QgO7ur04t"><use href="#icon-logo" data-page-node-id="0KSlNB8vSAWivQ3fi1mus7"/></svg></span>
+            <span class="brand-name" data-page-node-id="CxFEclCZX3nmeSiyluqxGi">VoiceMind</span>
+            <span class="brand-tag" data-page-node-id="H5ZYCBnOegaJiGihlHQ0m3">声智助手</span>
+        </div>
+        <div class="topbar-right" data-page-node-id="hvYr7zvHszCCljIiS3x5iZ">
+            <span class="svc-chip" id="topSvc" data-page-node-id="COn4qXV9LjL6VHSWvASf8O"><span class="dot" data-page-node-id="TTvsYAA9weLRYvEH0AMtz5"></span><span id="topSvcText" data-page-node-id="T6a18SNJgGqUbCnNOnF02A">正在连接服务</span></span>
+        </div>
+    </header>
+
+    <div class="layout" data-page-node-id="jH5bVDHIv0EzxfMeNuEnoB">
+        <!-- ==================== 左侧边栏 ==================== -->
+        <aside class="sidebar" data-page-node-id="dGFUHoj16g08Y4zEquzXit">
+            <div class="side-label" data-page-node-id="drKRulFgqMoHqxt1eErqLJ">功能</div>
+            <button class="nav-item active" data-mode="asr" type="button" data-page-node-id="C6SFWOBAGI3nn6URia0Vgk">
+                <svg class="icon" data-page-node-id="kyX2TLzs9F1jCJJLemyHtv"><use href="#icon-file" data-page-node-id="Nwsn9cFXmiqVxXkyxzq80Q"/></svg>普通识别
+            </button>
+            <button class="nav-item" data-mode="asr_spk" type="button" data-page-node-id="MJCjcAXOUQ3YGw4rXhPPNE">
+                <svg class="icon" data-page-node-id="o5g7DIkF5FJOlTbmOHhBA9"><use href="#icon-users" data-page-node-id="z6mHpGqOPsNDQoy3Gd0aiw"/></svg>说话人分离
+            </button>
+            <button class="nav-item" data-mode="search" type="button" data-page-node-id="G4IJDeHD9CWS0st2nVaJiX">
+                <svg class="icon" data-page-node-id="LAHnJeEBk6JwHZb8XuGrpc"><use href="#icon-search" data-page-node-id="5Ua9DaD9Yc8nSUqunGCwXw"/></svg>关键词检索
+            </button>
+            <button class="nav-item" data-mode="live" type="button" data-page-node-id="hx40KvqiGFsGqYFD9azWqr">
+                <svg class="icon" data-page-node-id="kl0qRykag9JFaNGDgDrruc"><use href="#icon-mic" data-page-node-id="CuiarOk331PBNWrFFODsm0"/></svg>实时录音
+            </button>
+            <button class="nav-item" data-mode="subtitle" type="button" data-page-node-id="navSubtitleItem">
+                <svg class="icon" data-page-node-id="icSubtitleFolder"><use href="#icon-folder" data-page-node-id="icSubtitleFolderUse"/></svg>字幕工作台
+            </button>
+            <button class="nav-item" data-mode="qa" type="button" data-page-node-id="navQaItem">
+                <svg class="icon" data-page-node-id="icQaChat"><use href="#icon-mic" data-page-node-id="icQaChatUse"/></svg>语音问答
+            </button>
+            <div class="sidebar-foot" data-page-node-id="AtTvaFL3STIfeJAQFcbPbS">
+                Fun-ASR-Nano 微调版<br data-page-node-id="8Ei2R6C8SMHBE5KFOPvydD">fsmn-vad + ct-punc<br data-page-node-id="NGZvEbCjPSxzshxZnFnPQN">本地部署 · 数据不出本机
+            </div>
+        </aside>
+
+        <!-- ==================== 主内容区 ==================== -->
+        <main class="main" data-page-node-id="rownIH6Us7c773QKjmBaS6">
+            <div class="page" data-page-node-id="69JixiD50etiwkn2oh4IlB">
+                <div class="page-head" data-page-node-id="cmLLgFf43YHU69RkU0Qv9g">
+                    <div class="page-title" id="pageTitle" data-page-node-id="xcn1vP4hCGGjixWl3e5PzS">普通识别</div>
+                    <div class="page-desc" id="pageDesc" data-page-node-id="sA7mdkyCwMnfi1LK3bgj4i">上传音频或视频文件，自动提取音轨并转写为文字。支持中文、英文、日文、韩文。</div>
+                </div>
+
+                <!-- 模型加载状态：懒加载后端口就绪不代表模型就绪 -->
+                <div id="modelStatus" class="status-line wait" data-page-node-id="RsLqeCXYkfyXcF2U9E6pNX">
+                    <svg class="icon" data-page-node-id="8JIh5xW38kNPtRGti49LQ4"><use href="#icon-clock" data-page-node-id="JPLhNqN5XEOeZvwG3xH4YA"/></svg><span id="modelStatusText" data-page-node-id="firg28KUD2PC6JohbxLG4J">正在检查模型状态…</span>
+                </div>
+
+                <!-- 关键词检索面板（共用下方上传区选择文件） -->
+                <div id="searchPanel" class="search-panel" style="display:none;" data-page-node-id="KkVA5i31qpGxnxR9tFBYHd">
+                    <div class="card" style="padding:16px; margin-bottom:14px;" data-page-node-id="4H0fRwc9z6BJqQIJ39fc1f">
+                        <div class="form-row" data-page-node-id="lN9HVFlYdi7AhOGHPBvfYw">
+                            <label data-page-node-id="HpNhCsEtEoLY9ZEFY2gloo"><b data-page-node-id="P8RtGlOKU991I8RofH0JxJ">关键词</b>（多个用逗号分隔）</label>
+                            <input type="text" id="searchKeywords" placeholder="例如：用户体验,预算,上线时间" data-page-node-id="aUUptTBpmRKum2qYb0DM4j">
+                        </div>
+                        <div class="form-row" data-page-node-id="0fNBSCIJbUfRP6EvWIAiOp">
+                            <label data-page-node-id="dAXzhE9iaA1Xqaq0ebAAbN">模糊匹配阈值：<span class="mono-val" id="thresholdVal" data-page-node-id="t0FJYMIGEDgUoLyH8Kb9jg">75</span>（越高越严格）</label>
+                            <input type="range" id="searchThreshold" min="50" max="100" value="75" oninput="document.getElementById('thresholdVal').textContent=this.value" data-page-node-id="dHt2b5Cg0Q4sJqQZBFnjLB">
+                        </div>
+                        <div class="btn-row" style="margin-bottom:0;" data-page-node-id="AFEnPtRROZ7XRi2DOvT4KM">
+                            <button id="searchBtn" type="button" class="btn btn-primary" onclick="doSearch()" data-page-node-id="s1zP0l5KRTMUJxPtIyfk2x">
+                                <svg class="icon" data-page-node-id="DxRiCFcBiY3OOlxlLHPXc9"><use href="#icon-search" data-page-node-id="af1qyt2nYciGcil7yPOjSI"/></svg>在所选文件中检索
+                            </button>
+                        </div>
+                        <div class="batch-box" data-page-node-id="sSd4qgA6wnB5Rn25ci2zDp">
+                            <div class="form-row" style="margin-bottom:10px;" data-page-node-id="FjA0PSPgm8RA3dUg8DryF4">
+                                <label data-page-node-id="9vU7fo33WzZr7Jmhm5wYkv"><b data-page-node-id="0LX4Ubfkf4xVtrDyVHjCwp">批量检索</b>（扫描整个文件夹）</label>
+                                <input type="text" id="batchFolder" placeholder="留空 = 项目 audio/ 与 video/ 目录" data-page-node-id="sWhghk7s1w7mSaV0ueJJgb">
+                            </div>
+                            <div class="btn-row" style="margin-bottom:0;" data-page-node-id="Cqd4oBzrsbu8O6zMdVBJxH">
+                                <button id="batchBtn" type="button" class="btn" onclick="doBatchSearch()" data-page-node-id="UtGW5VaqambASCrZ3uZ9mY">
+                                    <svg class="icon" data-page-node-id="7Ts2QMY4NfatMT77GI17Cj"><use href="#icon-folder" data-page-node-id="6qc4kGZs2wKCs7BitQcqR5"/></svg>批量检索全部音视频
+                                </button>
+                            </div>
+                            <div class="batch-hint" data-page-node-id="ddsj0D6NCaPJx5PlDEPcLM">批量模式不需要选择文件，直接扫描指定文件夹（或项目素材目录）下的音频与视频；文件越多耗时越长。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时录音面板（WebSocket 流式识别，服务端口 8001） -->
+                <div id="recordPanel" style="display:none;" data-page-node-id="i6qMotFh9gRc1K0hSI1AM0">
+                    <div class="btn-row" data-page-node-id="Q3m0pM1oZbWSzenbwmtf1Q">
+                        <button id="startWsBtn" type="button" class="btn btn-primary" onclick="startWsRecording()" data-page-node-id="21jcQYXTnR8FTNYTjinrHV">
+                            <svg class="icon" data-page-node-id="wKr6oxrZ7nrXw2UE1U4lMb"><use href="#icon-play" data-page-node-id="cnM2QsWCkJlqjRezMVY9zi"/></svg>开始流式识别
+                        </button>
+                        <button id="stopWsBtn" type="button" class="btn btn-danger" onclick="stopWsRecording()" style="display:none;" data-page-node-id="JMoKJGEtKTiCbntailZXxR">
+                            <svg class="icon" data-page-node-id="8GMoYf5ohMlquIbfz94W0X"><use href="#icon-stop" data-page-node-id="31NLHikeYZ7jjW6nRCco3w"/></svg>停止
+                        </button>
+                    </div>
+                    <div id="wsStatus" class="rec-status" data-page-node-id="UiVsjHTGankH0xR0h4jpnJ"><span class="rec-dot" data-page-node-id="0Ii2X3QqZsiCy4JsPz76Ez"></span><span id="wsStatusText" data-page-node-id="TIkZS5mVmxWUBUrt6HSrdi">未连接</span></div>
+                    <div id="micPerm" class="status-line" data-page-node-id="LSMkhLMtJBbrJwl4uPf09T">
+                        <svg class="icon" data-page-node-id="3wDDWzB1Hmj45H8dPkAXE9"><use href="#icon-mic" data-page-node-id="mJmjzZcyOxfCYBgCgz5PTS"/></svg><span id="micPermText" data-page-node-id="0j3TyxsMJloZGn8IoazC6l">正在检查麦克风权限…</span>
+                    </div>
+                    <div class="subs" id="liveSubtitle" style="display:none;" data-page-node-id="UXd4EvL3bkth1i8sqcmlKC">
+                        <div id="liveSubtitleContent" data-page-node-id="vjLugozkNTXn5okyhtPjIc"></div>
+                    </div>
+                    <div class="export-bar" id="liveActions" style="display:none;" data-page-node-id="ZTULpCNKQQCD5eiuOhg0MQ">
+                        <button class="btn" type="button" onclick="copyLive(this)" data-page-node-id="0u4l6PRkqGqaCE7kw9JLpf">
+                            <svg class="icon" data-page-node-id="URTRNlZDghFbj6QHWgyllh"><use href="#icon-copy" data-page-node-id="OEapDosBKJEVtrRoKV4g10"/></svg>复制全部字幕
+                        </button>
+                        <button class="btn btn-danger" type="button" onclick="clearLive()" data-page-node-id="evGcPd3lcuBQpcdqU3kLAb">
+                            <svg class="icon" data-page-node-id="kMgvS9VSiS65cHEzkXRrQb"><use href="#icon-trash" data-page-node-id="51FI96NqY5Q76mBB6zKsIA"/></svg>清空
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 字幕工作台面板：批量/单个音视频 → 同名 SRT + ASS -->
+                <div id="subtitlePanel" style="display:none;" data-page-node-id="subtitlePanel">
+                    <div class="card" style="padding:18px; margin-bottom:14px;" data-page-node-id="subtitleCard">
+                        <div class="sub-row" data-page-node-id="subRow1">
+                            <label data-page-node-id="subLabel1">批量文件夹 <span class="sub-dim" data-page-node-id="subLabel1dim">— 处理文件夹内全部视频，留空 = video/</span></label>
+                            <div class="sub-inline" data-page-node-id="subFolderGroup">
+                                <input type="text" id="videoFolder" placeholder="C:\Users\iiiis\Desktop\FunASR\video" data-page-node-id="subFolder">
+                                <button type="button" class="btn" onclick="pickFolder(this)" data-page-node-id="subPickBtn">
+                                    <svg class="icon" data-page-node-id="subPickIcon"><use href="#icon-folder" data-page-node-id="subPickIconUse"/></svg>选择文件夹
+                                </button>
+                            </div>
+                        </div>
+                        <div class="sub-row" data-page-node-id="subRow1b">
+                            <label data-page-node-id="subLabel1b2">单个文件 <span class="sub-dim" data-page-node-id="subLabel1bdim">— 视频/音频均可，选中后只处理它</span></label>
+                            <div class="sub-inline" data-page-node-id="subFileGroup">
+                                <input type="text" id="singleFile" placeholder="未选择" readonly data-page-node-id="subSingleFile">
+                                <button type="button" class="btn" onclick="pickFile(this)" data-page-node-id="subFilePickBtn">
+                                    <svg class="icon" data-page-node-id="subFilePickIcon"><use href="#icon-folder" data-page-node-id="subFilePickIconUse"/></svg>选择文件
+                                </button>
+                                <button type="button" class="btn" id="clearFileBtn" onclick="clearSingleFile()" style="display:none; padding:9px 12px;" data-page-node-id="subFileClearBtn">✕</button>
+                            </div>
+                        </div>
+                        <div class="sub-row" data-page-node-id="subRow2">
+                            <label data-page-node-id="subLabel2">热词 <span class="sub-dim" data-page-node-id="subLabel2dim">— 空格/逗号分隔，识别后自动校正写法</span></label>
+                            <input type="text" id="subtitleHotword" placeholder="例如：VoiceMind 达摩院 剪映" data-page-node-id="subHotword">
+                        </div>
+                        <div class="sub-grid" data-page-node-id="subRow3">
+                            <div class="sub-row" style="margin-bottom:0;" data-page-node-id="subRow3a">
+                                <label data-page-node-id="subLabel3a">时间偏移（秒，负数提前）</label>
+                                <input type="number" id="timeOffset" value="0" step="0.1" data-page-node-id="subOffset">
+                            </div>
+                            <div class="sub-row" style="margin-bottom:0;" data-page-node-id="subRow3b">
+                                <label data-page-node-id="subLabel3b">每行最大字数</label>
+                                <input type="number" id="subtitleMaxLen" value="15" min="5" max="30" data-page-node-id="subMaxLen">
+                            </div>
+                        </div>
+                        <div class="btn-row" style="margin:2px 0 0; align-items:center;" data-page-node-id="subBtnRow">
+                            <button id="subtitleBtn" type="button" class="btn btn-primary" onclick="startBatchSubtitle()" data-page-node-id="subBtn">
+                                <svg class="icon" data-page-node-id="subBtnIcon"><use href="#icon-folder" data-page-node-id="subBtnIconUse"/></svg>批量生成字幕
+                            </button>
+                            <span class="sub-dim" style="font-size:12px;" data-page-node-id="subBtnNote">每个文件输出 .srt + .ass</span>
+                        </div>
+                        <details class="sub-help" data-page-node-id="subHint">
+                            <summary data-page-node-id="subHintSummary">剪映里字幕块被拉长？改导入 .ass（点开看步骤）</summary>
+                            <p data-page-node-id="subHintBody">剪映对 SRT 有内置逻辑：两条字幕间隔超过 2~3 秒时，前一条会被强制拉长补位，设置无法关闭。每个文件已同时生成同名 .ass，其时间逐条严格保留、不会被拉长。导入步骤：新空项目 → 播放头归零 → 文本 → 本地字幕 → 导入，选择 .ass 文件。</p>
+                        </details>
+                    </div>
+                    <div class="result" id="subtitleResult" style="display:none;" data-page-node-id="subResult">
+                        <div class="result-head" data-page-node-id="subResultHead">
+                            <span class="result-label" data-page-node-id="subResultLabel">处理进度</span>
+                            <span class="mono-val" id="subtitleProgress" data-page-node-id="subProgress"></span>
+                        </div>
+                        <div class="status-line" id="subtitleCurrent" style="display:none;" data-page-node-id="subCurrent">
+                            <svg class="icon" data-page-node-id="subCurIcon"><use href="#icon-clock" data-page-node-id="subCurIconUse"/></svg><span id="subtitleCurrentText" data-page-node-id="subCurText"></span>
+                        </div>
+                        <div class="result-text" id="subtitleResults" data-page-node-id="subResults"></div>
+                    </div>
+                </div>
+
+                <!-- 语音问答面板：上传知识 → 语音/文字提问 → 检索 → 大模型作答 -->
+                <div id="qaPanel" style="display:none;" data-page-node-id="qaPanel">
+                    <!-- 卡片一：知识库 -->
+                    <div class="card" style="padding:18px; margin-bottom:14px;" data-page-node-id="qaKbCard">
+                        <div class="qa-head" data-page-node-id="qaKbHead">
+                            <span class="qa-step" data-page-node-id="qaKbStep">1</span>知识库
+                            <span class="sub-dim" id="kbStatus" style="margin-left:8px; font-size:12px;" data-page-node-id="qaKbStatus">检查中…</span>
+                        </div>
+                        <div class="sub-row" data-page-node-id="qaUpRow">
+                            <label data-page-node-id="qaUpLabel">上传文档 <span class="sub-dim" data-page-node-id="qaUpDim">— 支持 Word / PDF / Markdown / TXT，自动切块并向量化</span></label>
+                            <div class="sub-inline" data-page-node-id="qaUpGroup">
+                                <input type="text" id="kbFileName" placeholder="未选择文件" readonly data-page-node-id="qaKbFileName">
+                                <button type="button" class="btn" onclick="pickKnowledgeFile()" data-page-node-id="qaKbPickBtn">
+                                    <svg class="icon" data-page-node-id="qaKbPickIcon"><use href="#icon-file" data-page-node-id="qaKbPickIconUse"/></svg>选择文档
+                                </button>
+                                <button type="button" class="btn btn-primary" id="kbUploadBtn" onclick="uploadKnowledge()" data-page-node-id="qaKbUpBtn">
+                                    <svg class="icon" data-page-node-id="qaKbUpIcon"><use href="#icon-upload" data-page-node-id="qaKbUpIconUse"/></svg>上传入库
+                                </button>
+                                <input type="file" id="kbFile" accept=".docx,.doc,.pdf,.md,.markdown,.txt,.csv,.json,.log,.srt" style="display:none;" data-page-node-id="qaKbFile">
+                            </div>
+                        </div>
+                        <details class="sub-help" data-page-node-id="qaPasteDetails">
+                            <summary data-page-node-id="qaPasteSummary">或者直接粘贴一段文字入库</summary>
+                            <div class="sub-row" style="margin-top:10px;" data-page-node-id="qaPasteRow">
+                                <textarea id="kbText" rows="4" placeholder="把资料粘贴到这里（例如产品说明、FAQ、制度条款）…" data-page-node-id="qaKbText"></textarea>
+                                <div class="sub-inline" style="margin-top:8px;" data-page-node-id="qaPasteGroup">
+                                    <input type="text" id="kbTextName" placeholder="资料名称（如：产品说明书）" data-page-node-id="qaKbTextName">
+                                    <button type="button" class="btn" onclick="addKnowledgeText()" data-page-node-id="qaKbTextBtn">入库</button>
+                                </div>
+                            </div>
+                        </details>
+                        <div id="kbList" data-page-node-id="qaKbList"></div>
+                        <div class="btn-row" style="margin:10px 0 0;" data-page-node-id="qaKbResetRow">
+                            <button type="button" class="btn btn-danger" onclick="resetKnowledge()" data-page-node-id="qaKbResetBtn">
+                                <svg class="icon" data-page-node-id="qaKbResetIcon"><use href="#icon-trash" data-page-node-id="qaKbResetIconUse"/></svg>清空知识库
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 卡片二：提问 -->
+                    <div class="card" style="padding:18px; margin-bottom:14px;" data-page-node-id="qaAskCard">
+                        <div class="qa-head" data-page-node-id="qaAskHead"><span class="qa-step" data-page-node-id="qaAskStep">2</span>提问</div>
+                        <div class="btn-row" style="margin-bottom:12px;" data-page-node-id="qaAskBtnRow">
+                            <button type="button" class="btn btn-primary" id="qaRecBtn" onclick="toggleQaRecord()" data-page-node-id="qaRecBtn">
+                                <svg class="icon" data-page-node-id="qaRecIcon"><use href="#icon-mic" data-page-node-id="qaRecIconUse"/></svg>录音提问
+                            </button>
+                            <button type="button" class="btn" onclick="qaPickFile()" data-page-node-id="qaPickVideoBtn">
+                                <svg class="icon" data-page-node-id="qaPickVideoIcon"><use href="#icon-folder" data-page-node-id="qaPickVideoIconUse"/></svg>选择音视频文件
+                            </button>
+                            <input type="file" id="qaAudioFile" accept="audio/*,video/*" style="display:none;" data-page-node-id="qaAudioFile">
+                        </div>
+                        <div class="sub-row" data-page-node-id="qaTextRow">
+                            <label data-page-node-id="qaTextLabel">或直接打字提问</label>
+                            <div class="sub-inline" data-page-node-id="qaTextGroup">
+                                <input type="text" id="qaText" placeholder="例如：这个产品怎么用？" onkeydown="if(event.key==='Enter'){askText()}" data-page-node-id="qaTextInput">
+                                <button type="button" class="btn" onclick="askText()" data-page-node-id="qaTextBtn">
+                                    <svg class="icon" data-page-node-id="qaTextBtnIcon"><use href="#icon-search" data-page-node-id="qaTextBtnIconUse"/></svg>发送
+                                </button>
+                            </div>
+                        </div>
+                        <div class="sub-row" data-page-node-id="qaHotwordRow">
+                            <label data-page-node-id="qaHotwordLabel">热词 <span class="sub-dim" data-page-node-id="qaHotwordDim">— 提问里会提到的人名/专名，语音识别后自动校正</span></label>
+                            <input type="text" id="qaHotword" placeholder="例如：周潇齐 新娘" data-page-node-id="qaHotwordInput">
+                        </div>
+                        <div class="status-line" id="qaStatus" style="display:none;" data-page-node-id="qaStatusLine">
+                            <svg class="icon" data-page-node-id="qaStatusIcon"><use href="#icon-clock" data-page-node-id="qaStatusIconUse"/></svg><span id="qaStatusText" data-page-node-id="qaStatusText"></span>
+                        </div>
+                    </div>
+
+                    <!-- 回答结果 -->
+                    <div class="result" id="qaResult" data-page-node-id="qaResult">
+                        <div class="result-head" data-page-node-id="qaResultHead">
+                            <span class="result-label" data-page-node-id="qaResultLabel">回答</span>
+                            <span class="mono-val" id="qaMeta" data-page-node-id="qaMeta"></span>
+                        </div>
+                        <div class="result-text" id="qaAnswerText" data-page-node-id="qaAnswerText"></div>
+                        <div id="qaHits" data-page-node-id="qaHits"></div>
+                    </div>
+
+                    <!-- 大模型配置（折叠，首次使用填 Key） -->
+                    <details class="sub-help card" style="padding:14px 18px;" data-page-node-id="qaCfgDetails">
+                        <summary data-page-node-id="qaCfgSummary">大模型配置（首次使用需填 API Key）</summary>
+                        <div class="sub-row" style="margin-top:12px;" data-page-node-id="qaCfgKeyRow">
+                            <label data-page-node-id="qaCfgKeyLabel">DeepSeek API Key</label>
+                            <div class="sub-inline" data-page-node-id="qaCfgKeyGroup">
+                                <input type="password" id="llmKey" placeholder="sk-…（只保存在本机 code/llm_config.json）" data-page-node-id="qaCfgKey">
+                                <button type="button" class="btn btn-primary" onclick="saveLlmConfig()" data-page-node-id="qaCfgSaveBtn">保存</button>
+                            </div>
+                        </div>
+                        <div class="sub-grid" data-page-node-id="qaCfgGrid">
+                            <div class="sub-row" style="margin-bottom:0;" data-page-node-id="qaCfgModelRow">
+                                <label data-page-node-id="qaCfgModelLabel">模型</label>
+                                <input type="text" id="llmModel" placeholder="deepseek-chat" data-page-node-id="qaCfgModel">
+                            </div>
+                            <div class="sub-row" style="margin-bottom:0;" data-page-node-id="qaCfgBaseRow">
+                                <label data-page-node-id="qaCfgBaseLabel">接口地址</label>
+                                <input type="text" id="llmBase" placeholder="https://api.deepseek.com/v1" data-page-node-id="qaCfgBase">
+                            </div>
+                        </div>
+                        <p id="llmStatusText" style="font-size:12px;color:var(--text-dim);margin:10px 0 0;" data-page-node-id="qaCfgStatus"></p>
+                    </details>
+                </div>
+
+                <div class="upload-area" id="uploadArea" data-page-node-id="pQ1DimpvnKa0R8ggfxMTYo">
+                    <svg class="icon icon-lg" data-page-node-id="cSl9bcsmXQlJnrNWlGsZ9f"><use href="#icon-upload" data-page-node-id="XL5nmJjIL1n64cxBQqRuNa"/></svg>
+                    <div class="upload-text" id="uploadText" data-page-node-id="EWR24QCwfaWm9dEDYgmnnp">点击选择音频或视频文件，或拖拽到此处</div>
+                    <div class="upload-hint" id="uploadHint" data-page-node-id="A2MWIR5UfIVsTPjbKSjDou">支持 WAV、MP3、M4A、FLAC、MP4、MOV、MKV 等（视频自动提取音频）</div>
+                    <input type="file" id="audioFile" accept="audio/*,video/*" style="display: none;" data-page-node-id="eDD30vK2iNAj4QiY082TDm">
+                </div>
+
+                <div class="file-info" id="fileInfo" data-page-node-id="EnlSXLxlTjurjOcMAPY8ZK">
+                    <svg class="icon" data-page-node-id="gxBsv2rDbYHjuSdejgRF4l"><use href="#icon-check" data-page-node-id="Ukmxd2Iyg1g8l5AXJFvbfm"/></svg>已选择&nbsp;<span class="fname" id="fileName" data-page-node-id="mYiOWS1n3hKt9oMJAGnOvZ"></span>
+                </div>
+
+                <div class="btn-row" id="submitRow" data-page-node-id="ETH6D7o7bwpyzlWkDMvURu">
+                    <button id="submitBtn" class="btn btn-primary" onclick="uploadAudio()" data-page-node-id="Vy22qQacNQkQF6Nxh43AfV">
+                        <svg class="icon" data-page-node-id="jh1BrBYmApYnq3xjFoSjjz"><use href="#icon-wave" data-page-node-id="DqcnDleXyQY9BsmA1Bcw8M"/></svg>开始识别
+                    </button>
+                </div>
+
+                <div class="result" id="result" data-page-node-id="JTE3nxwmdTK7AVcPNZrExP">
+                    <div class="result-head" data-page-node-id="9qo1GgHY9ENRc81vAIdCuU">
+                        <span class="result-label" id="resultLabel" data-page-node-id="D6k8ZJ8rsFktv5awHfUsDD">识别结果</span>
+                    </div>
+                    <div class="result-text" id="resultText" data-page-node-id="37O3EGcNAc7648ZpYCo4wz"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== 底部状态栏 ==================== -->
+    <footer class="statusbar" data-page-node-id="YyXqZ9NQYwbcL6BSVkYoma">
+        <span class="sb-item" data-page-node-id="SABWZTGN5vR8FqA2IY144Q"><span class="dot" id="sbDot" data-page-node-id="GZ3oRQZjwGry6jINYvK0vL"></span><span id="sbStatus" data-page-node-id="oxmaXaQ4U1Nnt6F9wPn8DZ">初始化</span></span>
+        <span class="sb-item" id="sbModel" data-page-node-id="4rgXZ9fzDByOgf66zLQH9G">模型 —</span>
+        <span class="sb-item" id="sbLatency" data-page-node-id="84cAPL1mPBVlzkfH7oF9ux">延迟 —</span>
+        <span class="sb-item sb-right" id="sbHost" data-page-node-id="WrQCHIQCCq6Gn2NMsgqZvH">127.0.0.1:8000</span>
+    </footer>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const audioFile = document.getElementById('audioFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitRow = document.getElementById('submitRow');
+        const result = document.getElementById('result');
+        const resultText = document.getElementById('resultText');
+        const resultLabel = document.getElementById('resultLabel');
+
+        // 接口地址：页面由 API 服务托管时用相对路径；直接双击打开 html 时回退到本机地址
+        const apiBase = location.protocol.startsWith('http') ? '' : 'http://127.0.0.1:8000';
+
+        // ==================== 模型加载状态（懒加载：端口就绪 ≠ 模型就绪） ====================
+        // 服务改成"启动只绑端口、模型首次使用时才加载"后，页面能秒开，
+        // 但第一次识别要等 30~90 秒。这里显示真实状态，并在页面打开时就请后端后台预热。
+        const modelStatusText = document.getElementById('modelStatusText');
+        const modelStatusEl = document.getElementById('modelStatus');
+        const topSvcText = document.getElementById('topSvcText');
+        const topSvc = document.getElementById('topSvc');
+        const sbDot = document.getElementById('sbDot');
+        const sbStatus = document.getElementById('sbStatus');
+        const sbModel = document.getElementById('sbModel');
+        const sbLatency = document.getElementById('sbLatency');
+        let modelBaseReady = false;
+
+        function setStatusEls(cls, text) {
+            // cls: ok / wait / err —— 同步更新模型状态条、顶部服务状态与底部状态栏
+            modelStatusEl.className = 'status-line ' + cls;
+            modelStatusText.textContent = text;
+            topSvc.className = 'svc-chip';
+            topSvc.querySelector('.dot').className = 'dot ' + (cls === 'ok' ? 'ok' : cls === 'err' ? 'err' : 'wait');
+            topSvcText.textContent = cls === 'err' ? '服务未连接' : '服务运行中';
+            sbDot.className = 'dot ' + (cls === 'ok' ? 'ok' : cls === 'err' ? 'err' : 'wait');
+            sbStatus.textContent = cls === 'err' ? '服务离线' : cls === 'ok' ? '服务就绪' : '模型加载中';
+        }
+
+        async function refreshModelStatus() {
+            const t0 = performance.now();
+            try {
+                const r = await fetch(apiBase + '/health');
+                const d = await r.json();
+                sbLatency.textContent = '延迟 ' + Math.round(performance.now() - t0) + ' ms';
+                modelBaseReady = !!d.base_ready;
+                const loaded = d.loaded_models || [];
+                sbModel.textContent = '模型 SenseVoiceSmall' + (loaded.includes('spk') ? ' + CAM++' : '');
+                if (d.base_ready) {
+                    setStatusEls('ok', '模型已就绪，识别会很快出结果'
+                        + (loaded.includes('spk') ? '（说话人分离模型也已加载）' : ''));
+                } else if ((d.loading || []).includes('base')) {
+                    setStatusEls('wait', '模型正在后台加载（约 30~90 秒）…现在就可以选文件提交，加载完成后会自动开始识别。');
+                } else {
+                    setStatusEls('wait', '模型尚未加载：页面已自动在后台预热，首次识别约需 30~90 秒。');
+                }
+            } catch (e) {
+                modelBaseReady = false;
+                sbLatency.textContent = '延迟 —';
+                setStatusEls('err', '无法连接识别服务（127.0.0.1:8000），请确认服务已启动。');
+            }
+        }
+
+        (async () => {
+            await refreshModelStatus();
+            try { await fetch(apiBase + '/warmup', { method: 'POST' }); } catch (e) { /* 服务未启动时静默 */ }
+            refreshModelStatus();
+        })();
+        setInterval(refreshModelStatus, 5000);
+
+        // ==================== 模式切换（左侧边栏导航） ====================
+        const MODE_META = {
+            asr:      { title: '普通识别',   desc: '上传音频或视频文件，自动提取音轨并转写为文字。支持中文、英文、日文、韩文。' },
+            asr_spk:  { title: '说话人分离', desc: '识别转写内容并区分不同说话人，生成带角色标签的分段文稿，可导出 TXT 或 SRT 字幕。' },
+            search:   { title: '关键词检索', desc: '上传音频或视频并输入关键词，返回每个命中片段的时间点与内容，支持精确与模糊匹配。' },
+            live:     { title: '实时录音',   desc: '通过麦克风实时转写，字幕逐句流出。需要浏览器授权麦克风，且仅限 127.0.0.1 / localhost 访问。' },
+            subtitle: { title: '字幕工作台', desc: '批量或单个音视频生成同名 SRT + ASS 字幕：出声对齐、智能断句、热词校正，剪映/PR 导入即用。' },
+            qa:       { title: '语音问答',   desc: '上传你的资料建成知识库，再用语音或文字提问，系统检索资料后由大模型作答。' }
+        };
+        let currentMode = 'asr';
+        const recordPanel = document.getElementById('recordPanel');
+        const searchPanel = document.getElementById('searchPanel');
+        const subtitlePanel = document.getElementById('subtitlePanel');
+        const qaPanel = document.getElementById('qaPanel');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageDesc = document.getElementById('pageDesc');
+
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                const meta = MODE_META[currentMode];
+                pageTitle.textContent = meta.title;
+                pageDesc.textContent = meta.desc;
+                const isLive = currentMode === 'live';
+                const isSearch = currentMode === 'search';
+                const isSubtitle = currentMode === 'subtitle';
+                const isQa = currentMode === 'qa';
+                // 实时录音/字幕工作台/语音问答都不走下方通用上传区，各有自己的交互
+                uploadArea.style.display = isLive || isSubtitle || isQa ? 'none' : '';
+                submitRow.style.display = isLive || isSearch || isSubtitle || isQa ? 'none' : '';
+                fileInfo.classList.remove('show');
+                result.className = 'result';
+                recordPanel.style.display = isLive ? 'block' : 'none';
+                searchPanel.style.display = isSearch ? 'block' : 'none';
+                subtitlePanel.style.display = isSubtitle ? 'block' : 'none';
+                qaPanel.style.display = isQa ? 'block' : 'none';
+                if (isQa) { refreshKbStatus(); refreshQaConfig(); }   // 进页面就刷新知识库与大模型状态
+                if (isLive) refreshMicPermHint();   // 进入实时录音页就显示当前权限状态
+                if (isLive && isWsRecording) stopWsRecording();
+            });
+        });
+
+        // 点击上传区域
+        uploadArea.addEventListener('click', () => {
+            audioFile.click();
+        });
+
+        // 文件选择后显示文件名
+        audioFile.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileName.textContent = e.target.files[0].name;
+                fileInfo.classList.add('show');
+            }
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                audioFile.files = e.dataTransfer.files;
+                fileName.textContent = e.dataTransfer.files[0].name;
+                fileInfo.classList.add('show');
+            }
+        });
+
+        // 毫秒转 分:秒
+        function fmtTime(ms) {
+            const total = Math.floor(ms / 1000);
+            return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+        }
+
+        // 说话人分段渲染（同色系对应同一说话人）
+        function renderSegments(segments) {
+            return segments.map(seg => {
+                const spkKey = /^说话人(\d+)$/.exec(seg.speaker);
+                const cls = spkKey ? (['spk-0','spk-1','spk-2','spk-3'].includes('spk-' + spkKey[1]) ? 'spk-' + spkKey[1] : 'spk-other') : 'spk-other';
+                return `<div class="segment">
+                    <div class="segment-header">
+                        <span class="speaker-badge ${cls}">${seg.speaker}</span>
+                        <span class="seg-time">${fmtTime(seg.start)} - ${fmtTime(seg.end)}</span>
+                    </div>
+                    <div class="seg-text">${seg.text}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // 生成可复制的纯文本（带角色标签）
+        function segmentsToText(segments) {
+            return segments.map(seg => `【${seg.speaker}】${seg.text}`).join('\n');
+        }
+
+        // 上传并识别
+        async function uploadAudio() {
+            if (!audioFile.files[0]) {
+                alert('请先选择音频文件！');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', audioFile.files[0]);
+
+            submitBtn.disabled = true;
+            const t0 = performance.now();
+            submitBtn.innerHTML = modelBaseReady ? '识别中，请稍候…' : '正在加载模型并识别（首次约 30~90 秒）…';
+            result.className = 'result show';
+            resultText.innerHTML = '<div class="loading">正在识别</div>';
+
+            try {
+                const response = await fetch(apiBase + '/' + currentMode, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                sbLatency.textContent = '延迟 ' + Math.round(performance.now() - t0) + ' ms';
+
+                if (data.code === 0) {
+                    result.className = 'result show';
+                    if (currentMode === 'asr_spk') {
+                        resultLabel.textContent = '识别结果 · 按说话人分段';
+                        lastPlainResult = segmentsToText(data.segments);
+                        const exportBtns = data.segments.length
+                            ? '<div class="export-bar">' +
+                              '<button class="btn" type="button" onclick="copyResult(this, \'复制带标签文本\')"><svg class="icon"><use href="#icon-copy"/></svg>复制带标签文本</button>' +
+                              '<button class="btn" type="button" onclick="exportResult(\'txt\', this)"><svg class="icon"><use href="#icon-download"/></svg>导出TXT</button>' +
+                              '<button class="btn" type="button" onclick="exportResult(\'srt\', this)"><svg class="icon"><use href="#icon-download"/></svg>导出SRT字幕</button>' +
+                              '</div>'
+                            : '';
+                        resultText.innerHTML = data.segments.length
+                            ? renderSegments(data.segments) + exportBtns
+                            : '<div class="empty-hint">未识别到内容</div>';
+                    } else if (data.type === 'video' && data.segments && data.segments.length) {
+                        // 视频文件：带时间戳的分段展示
+                        resultLabel.textContent = '识别结果 · 视频，按时间分段';
+                        lastPlainResult = data.text || '';
+                        resultText.innerHTML =
+                            '<div style="max-height:320px;overflow-y:auto;">' +
+                            data.segments.map(seg =>
+                                `<div style="margin-bottom:8px;">` +
+                                `<span style="color:var(--text-dim);font-size:12px;font-family:var(--mono);">[${fmtHMS(seg.start)} - ${fmtHMS(seg.end)}]</span>` +
+                                `<span style="margin-left:8px;">${escapeHtml(seg.text)}</span>` +
+                                `</div>`
+                            ).join('') +
+                            '</div>' +
+                            '<div class="export-bar">' +
+                            '<button class="btn" type="button" onclick="copyResult(this, \'复制全文\')"><svg class="icon"><use href="#icon-copy"/></svg>复制全文</button>' +
+                            '</div>';
+                    } else {
+                        resultLabel.textContent = '识别结果';
+                        resultText.textContent = data.text || '（未识别到内容）';
+                    }
+                } else {
+                    result.className = 'result show error';
+                    resultLabel.textContent = '识别失败';
+                    resultText.textContent = data.error || '未知错误';
+                }
+            } catch (error) {
+                result.className = 'result show error';
+                resultLabel.textContent = '请求失败';
+                resultText.textContent = '无法连接到服务器，请确认 API 服务已启动。错误信息：' + error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg class="icon"><use href="#icon-wave"/></svg>开始识别';
+                refreshModelStatus();
+            }
+        }
+
+        // 复制识别结果（resetLabel：复制后恢复的按钮文字，各场景不同）
+        let lastPlainResult = '';
+        function copyResult(btn, resetLabel) {
+            navigator.clipboard.writeText(lastPlainResult).then(() => {
+                btn.innerHTML = '<svg class="icon"><use href="#icon-check"/></svg>已复制';
+                setTimeout(() => { btn.innerHTML = '<svg class="icon"><use href="#icon-copy"/></svg>' + (resetLabel || '复制带标签文本'); }, 2000);
+            });
+        }
+
+        // 导出识别结果（重新上传当前音频，由后端生成文件下载）
+        async function exportResult(format, btn) {
+            if (!audioFile.files[0]) {
+                alert('没有可导出的音频文件，请重新选择！');
+                return;
+            }
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.textContent = '导出中…';
+            try {
+                const formData = new FormData();
+                formData.append('file', audioFile.files[0]);
+                const endpoint = format === 'srt' ? '/export_srt' : '/export_txt';
+                const response = await fetch(apiBase + endpoint, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error('服务器返回 ' + response.status);
+
+                const blob = await response.blob();
+                const baseName = audioFile.files[0].name.replace(/\.[^.]+$/, '');
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = baseName + (format === 'srt' ? '.srt' : '.txt');
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('导出失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
+        // ==================== 关键词检索（/search_keywords、/batch_search） ====================
+        // 后端时间单位是毫秒；这里格式化为 HH:MM:SS
+        function fmtHMS(ms) {
+            const total = Math.floor(ms / 1000);
+            const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+            return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // 把命中的关键词在文本里高亮（先转义再替换，避免注入）
+        function highlightKeywords(text, keywords) {
+            let html = escapeHtml(text);
+            keywords
+                .slice()
+                .sort((a, b) => b.length - a.length)   // 先替换长词，防止短词把长词拆散
+                .forEach(kw => {
+                    const safe = escapeHtml(kw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    html = html.replace(new RegExp(safe, 'gi'), m => '<mark>' + m + '</mark>');
+                });
+            return html;
+        }
+
+        function renderMatchItem(m, fileLabel) {
+            const badges = m.hits.map(h =>
+                `<span class="match-kw ${h.match_type === 'fuzzy' ? 'fuzzy' : ''}">${escapeHtml(h.keyword)}</span>` +
+                (h.match_type === 'fuzzy' ? `<span class="match-sim">${h.similarity}%</span>` : '')
+            ).join(' ');
+            const fileTag = fileLabel ? `<span class="match-sim">${escapeHtml(fileLabel)}</span>` : '';
+            return `<div class="match-item">
+                <div class="match-header">
+                    <div>${badges}</div>
+                    <div>${fileTag}<span class="match-time">${fmtHMS(m.start)} - ${fmtHMS(m.end)}</span></div>
+                </div>
+                <div class="match-text">${highlightKeywords(m.text, m.keywords)}</div>
+            </div>`;
+        }
+
+        // 保存最近一次检索结果，用于导出 TXT
+        let lastSearchData = null;
+
+        function showSearchResult(headerText, matches, fileLabel) {
+            result.className = 'result show';
+            resultLabel.textContent = headerText;
+            resultText.innerHTML = matches.length
+                ? matches.map(m => renderMatchItem(m, fileLabel)).join('') +
+                  '<div class="export-bar"><button class="btn" type="button" onclick="exportSearchTxt(this)"><svg class="icon"><use href="#icon-download"/></svg>导出TXT</button></div>'
+                : '<div class="empty-hint">未找到匹配内容</div>';
+        }
+
+        async function doSearch() {
+            const keywords = document.getElementById('searchKeywords').value.trim();
+            const threshold = document.getElementById('searchThreshold').value;
+            if (!keywords) { alert('请输入至少一个关键词！'); return; }
+            if (!audioFile.files[0]) { alert('请先选择音频或视频文件！'); return; }
+
+            const btn = document.getElementById('searchBtn');
+            btn.disabled = true;
+            const t0 = performance.now();
+            btn.textContent = modelBaseReady ? '检索中，请稍候…（需先完成语音识别）' : '正在加载模型并检索（首次约 30~90 秒）…';
+            result.className = 'result show';
+            resultText.innerHTML = '<div class="loading">正在识别并检索</div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', audioFile.files[0]);
+                formData.append('keywords', keywords);
+                formData.append('fuzzy_threshold', threshold);
+                const response = await fetch(apiBase + '/search_keywords', { method: 'POST', body: formData });
+                const data = await response.json();
+                sbLatency.textContent = '延迟 ' + Math.round(performance.now() - t0) + ' ms';
+                if (data.code === 0) {
+                    lastSearchData = { type: 'single', data };
+                    showSearchResult(
+                        `检索结果：${data.keywords.join('、')} | 命中 ${data.total_matches} / ${data.total_segments} 段`,
+                        data.matches
+                    );
+                } else {
+                    result.className = 'result show error';
+                    resultLabel.textContent = '检索失败';
+                    resultText.textContent = data.error || '未知错误';
+                }
+            } catch (error) {
+                result.className = 'result show error';
+                resultLabel.textContent = '请求失败';
+                resultText.textContent = '无法连接到服务器，请确认 API 服务已启动。错误信息：' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="icon"><use href="#icon-search"/></svg>在所选文件中检索';
+                refreshModelStatus();
+            }
+        }
+
+        async function doBatchSearch() {
+            const keywords = document.getElementById('searchKeywords').value.trim();
+            const threshold = document.getElementById('searchThreshold').value;
+            const folder = document.getElementById('batchFolder').value.trim();
+            if (!keywords) { alert('请输入至少一个关键词！'); return; }
+
+            const btn = document.getElementById('batchBtn');
+            btn.disabled = true;
+            const t0 = performance.now();
+            btn.textContent = '批量检索中，请耐心等待…（逐个文件识别，耗时与总时长成正比）';
+            result.className = 'result show';
+            resultText.innerHTML = '<div class="loading">正在批量识别并检索</div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('folder', folder);
+                formData.append('keywords', keywords);
+                formData.append('fuzzy_threshold', threshold);
+                const response = await fetch(apiBase + '/batch_search', { method: 'POST', body: formData });
+                const data = await response.json();
+                sbLatency.textContent = '延迟 ' + Math.round(performance.now() - t0) + ' ms';
+                if (data.code === 0) {
+                    lastSearchData = { type: 'batch', data };
+                    result.className = 'result show';
+                    resultLabel.textContent =
+                        `批量检索结果：${data.keywords.join('、')} | ${data.matched_files} / ${data.total_files} 个文件命中`;
+                    resultText.innerHTML = data.results.length
+                        ? data.results.map(r =>
+                            `<div class="match-item match-file"><b>${escapeHtml(r.file)}</b>（${r.matches.length} 处匹配）</div>` +
+                            r.matches.map(m => renderMatchItem(m)).join('')
+                          ).join('') +
+                          '<div class="export-bar"><button class="btn" type="button" onclick="exportSearchTxt(this)"><svg class="icon"><use href="#icon-download"/></svg>导出TXT</button></div>'
+                        : '<div class="empty-hint">所有文件均未找到匹配内容</div>' +
+                          (data.failed_files.length ? `<div class="match-sim">处理失败 ${data.failed_files.length} 个文件，详见服务端日志</div>` : '');
+                } else {
+                    result.className = 'result show error';
+                    resultLabel.textContent = '批量检索失败';
+                    resultText.textContent = data.error || '未知错误';
+                }
+            } catch (error) {
+                result.className = 'result show error';
+                resultLabel.textContent = '请求失败';
+                resultText.textContent = '无法连接到服务器：' + error.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="icon"><use href="#icon-folder"/></svg>批量检索全部音视频';
+                refreshModelStatus();
+            }
+        }
+
+        // ==================== 字幕工作台：批量视频 → 同名 SRT ====================
+        let subtitleTimer = null;
+
+        // 弹系统原生文件夹选择框（后端 tkinter 实现），选中后回填并记住
+        async function pickFolder(btn) {
+            if (btn) btn.disabled = true;
+            try {
+                const resp = await fetch(apiBase + '/pick_folder');
+                const data = await resp.json();
+                if (data.folder) {
+                    document.getElementById('videoFolder').value = data.folder;
+                    try { localStorage.setItem('funasr_video_folder', data.folder); } catch (e) {}
+                } else if (data.error) {
+                    alert('无法打开文件夹选择框：' + data.error);
+                }
+                // 取消选择（folder 为空）不打扰用户
+            } catch (e) {
+                alert('无法连接到服务器：' + e.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // 页面加载时恢复上次用的文件夹
+        try {
+            const saved = localStorage.getItem('funasr_video_folder');
+            if (saved) document.getElementById('videoFolder').value = saved;
+        } catch (e) {}
+
+        // ==================== 单个文件模式 ====================
+        let singleFilePath = '';
+
+        // 弹系统原生文件选择框（后端 tkinter），选中单个视频/音频
+        async function pickFile(btn) {
+            if (btn) btn.disabled = true;
+            try {
+                const resp = await fetch(apiBase + '/pick_file');
+                const data = await resp.json();
+                if (data.file) {
+                    singleFilePath = data.file;
+                    document.getElementById('singleFile').value = data.file;
+                    document.getElementById('clearFileBtn').style.display = '';
+                    const btn2 = document.getElementById('subtitleBtn');
+                    btn2.innerHTML = '<svg class="icon"><use href="#icon-folder"/></svg>生成这条字幕';
+                } else if (data.error) {
+                    alert('无法打开文件选择框：' + data.error);
+                }
+            } catch (e) {
+                alert('无法连接到服务器：' + e.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // 清除单文件，回到文件夹批量模式
+        function clearSingleFile() {
+            singleFilePath = '';
+            document.getElementById('singleFile').value = '';
+            document.getElementById('clearFileBtn').style.display = 'none';
+            document.getElementById('subtitleBtn').innerHTML = '<svg class="icon"><use href="#icon-folder"/></svg>批量生成字幕';
+        }
+
+        async function startBatchSubtitle() {
+            const btn = document.getElementById('subtitleBtn');
+            const folder = document.getElementById('videoFolder').value.trim();
+            const hotword = document.getElementById('subtitleHotword').value.trim();
+            const offset = parseFloat(document.getElementById('timeOffset').value) || 0;
+            const maxLen = parseInt(document.getElementById('subtitleMaxLen').value) || 15;
+            try { localStorage.setItem('funasr_video_folder', folder); } catch (e) {}
+
+            const showErr = (msg) => {
+                const box = document.getElementById('subtitleResult');
+                box.className = 'result show error';
+                box.style.display = 'block';
+                document.getElementById('subtitleProgress').textContent = '';
+                document.getElementById('subtitleCurrent').style.display = 'none';
+                document.getElementById('subtitleResults').textContent = msg;
+            };
+
+            btn.disabled = true;
+            try {
+                const body = new URLSearchParams();
+                if (singleFilePath) {
+                    body.append('file', singleFilePath);   // 单文件模式优先
+                } else {
+                    body.append('folder', folder);
+                }
+                body.append('hotword', hotword);
+                body.append('offset', offset);
+                body.append('max_len', maxLen);
+                const resp = await fetch(apiBase + '/batch_video', { method: 'POST', body });
+                const data = await resp.json();
+                if (data.code !== 0) { showErr(data.error || '启动失败'); return; }
+
+                // 启动成功：进入轮询
+                const box = document.getElementById('subtitleResult');
+                box.className = 'result show';
+                box.style.display = 'block';
+                document.getElementById('subtitleResults').textContent = '正在扫描…';
+                let pollCount = 0;
+                if (subtitleTimer) clearInterval(subtitleTimer);
+                subtitleTimer = setInterval(() => pollSubtitle(data.task_id, ++pollCount), 3000);
+                pollSubtitle(data.task_id, 0);
+            } catch (error) {
+                showErr('无法连接到服务器：' + error.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function pollSubtitle(taskId, pollCount) {
+            const box = document.getElementById('subtitleResult');
+            const progress = document.getElementById('subtitleProgress');
+            const currentLine = document.getElementById('subtitleCurrent');
+            const currentText = document.getElementById('subtitleCurrentText');
+            const listBox = document.getElementById('subtitleResults');
+            try {
+                const resp = await fetch(apiBase + '/batch_video_status?task_id=' + taskId);
+                const data = await resp.json();
+                if (data.code !== 0) { clearInterval(subtitleTimer); listBox.textContent = '任务查询失败：' + (data.error || ''); return; }
+                progress.textContent = `${data.done} / ${data.total}`;
+                if (data.status === 'running') {
+                    currentLine.style.display = 'flex';
+                    currentText.textContent = '正在处理：' + (data.current || '…');
+                }
+                if (pollCount % 2 === 0 || data.status !== 'running') {
+                    // 每 6 秒重建一次列表（避免频繁重排）
+                    listBox.innerHTML = data.results.map(r => {
+                        const ok = r.status === 'success';
+                        // 热词纠错明细：服务端实际命中的替换（空=本次没有纠错）
+                        const fixes = (r.fixes || []).map(f =>
+                            `${escapeHtml(f.from)} → ${escapeHtml(f.to)}`).join('，');
+                        const outs = ok ? [r.srt, r.ass].filter(Boolean).join(' + ') : '';
+                        return `<div class="match-item" style="display:flex; justify-content:space-between; gap:8px;">
+                                    <span><b>${ok ? '✅' : '❌'}</b> ${escapeHtml(r.file)}</span>
+                                    <span class="mono-val">${ok ? (outs + ' · ' + r.lines + ' 条') : ''}</span>
+                                </div>`
+                            + (ok && fixes ? `<div class="match-sim" style="margin-left:24px;">🔤 热词纠错：${fixes}</div>` : '')
+                            + (ok ? '' : `<div class="match-sim" style="margin-left:24px;">${escapeHtml(r.error)}</div>`);
+                    }).join('');
+                }
+                if (data.status === 'done') {
+                    clearInterval(subtitleTimer);
+                    currentLine.style.display = 'none';
+                    const okCount = data.results.filter(r => r.status === 'success').length;
+                    const hwNote = (data.hotword || '')
+                        ? `<span class="mono-val">热词：${escapeHtml(data.hotword)}</span>`
+                        : '<span style="color:#e0a030;">⚠ 本次未收到热词</span>';
+                    listBox.innerHTML = `<div class="match-item match-file" style="display:flex; justify-content:space-between; gap:8px;">
+                            <b>完成：${okCount} / ${data.total} 个视频的字幕已生成</b>${hwNote}</div>` + listBox.innerHTML;
+                    refreshModelStatus();
+                } else if (data.status === 'error') {
+                    clearInterval(subtitleTimer);
+                    listBox.textContent = '批量任务出错：' + (data.error || '未知');
+                }
+            } catch (e) {
+                // 服务瞬时不可达（如正在重启）时静默，下一轮重试；连续失败才报错
+                if (pollCount > 10) { clearInterval(subtitleTimer); listBox.textContent = '连接中断：' + e.message; }
+            }
+        }
+
+        // 把当前检索结果导出为 TXT（前端直接生成下载）
+        function exportSearchTxt(btn) {
+            if (!lastSearchData) { alert('没有可导出的检索结果'); return; }
+            const d = lastSearchData.data;
+            const lines = [];
+            lines.push('VoiceMind 关键词检索结果');
+            lines.push(`关键词：${d.keywords.join('、')}    模糊阈值：${d.fuzzy_threshold}`);
+            lines.push(`生成时间：${new Date().toLocaleString()}`);
+            lines.push('='.repeat(50));
+            if (lastSearchData.type === 'single') {
+                lines.push(`文件：${d.filename}    命中 ${d.total_matches} / ${d.total_segments} 段`);
+                lines.push('');
+                d.matches.forEach(m => {
+                    lines.push(`[${fmtHMS(m.start)} - ${fmtHMS(m.end)}] 关键词：${m.keywords.join('、')}`);
+                    lines.push(m.text);
+                    lines.push('');
+                });
+            } else {
+                lines.push(`扫描 ${d.total_files} 个文件，${d.matched_files} 个命中`);
+                lines.push('');
+                d.results.forEach(r => {
+                    lines.push(`── ${r.file}（${r.matches.length} 处匹配）`);
+                    r.matches.forEach(m => {
+                        lines.push(`  [${fmtHMS(m.start)} - ${fmtHMS(m.end)}] 关键词：${m.keywords.join('、')}`);
+                        lines.push('  ' + m.text);
+                    });
+                    lines.push('');
+                });
+                (d.failed_files || []).forEach(f => lines.push(`x 处理失败：${f.file} — ${f.error}`));
+            }
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '关键词检索结果.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        // ==================== WebSocket 流式录音（ws_server.py : 8001） ====================
+        const startWsBtn = document.getElementById('startWsBtn');
+        const stopWsBtn = document.getElementById('stopWsBtn');
+        const wsStatus = document.getElementById('wsStatus');
+        const wsStatusText = document.getElementById('wsStatusText');
+        const micPerm = document.getElementById('micPerm');
+        const micPermText = document.getElementById('micPermText');
+        const liveSubtitle = document.getElementById('liveSubtitle');
+        const liveSubtitleContent = document.getElementById('liveSubtitleContent');
+
+        let ws = null;
+        let audioContext = null;
+        let audioWorkletNode = null;
+        let mediaStream = null;
+        let isWsRecording = false;
+        let liveLines = [];   // 已定稿的行文本（每行一条），用于复制
+
+        // 流式识别服务地址：本机访问时用当前主机名（便于局域网），直接打开 html 时回退 127.0.0.1
+        function wsStreamUrl() {
+            if (apiBase) return apiBase.replace(/^http/, 'ws').replace(':8000', ':8001');
+            return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.hostname + ':8001';
+        }
+
+        function setWsStatus(text, cls) {
+            wsStatusText.textContent = text;
+            wsStatus.className = 'rec-status' + (cls ? ' ' + cls : '');
+        }
+
+        // ========== 麦克风权限状态（解释"反复询问"的关键）==========
+        // Chrome/Edge 只会持久记住"允许"和"拒绝"两种明确选择；
+        // 点"×"或按 Esc 关闭权限弹窗属于"未表态"，浏览器不会记住，所以下次还会问。
+        // 并且权限是按"来源"存储的：http://127.0.0.1:8000 与 http://localhost:8000 是两个不同来源，
+        // 在其中一个授权，换另一个访问仍会被重新询问——建议固定用一个地址访问。
+        async function queryMicPermission() {
+            if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
+            try {
+                const st = await navigator.permissions.query({ name: 'microphone' });
+                return st.state;   // granted / prompt / denied
+            } catch (e) {
+                return 'unknown';  // 部分浏览器（如 Firefox 老版本）不支持查询 microphone
+            }
+        }
+
+        async function refreshMicPermHint() {
+            if (!micPerm) return;
+            if (!window.isSecureContext) {
+                micPerm.className = 'status-line err';
+                micPermText.textContent = '当前页面不是安全上下文，浏览器会禁止麦克风。请用 http://127.0.0.1:8000/index.html 访问，不要双击 html 文件打开。';
+                return;
+            }
+            const state = await queryMicPermission();
+            if (state === 'granted') {
+                micPerm.className = 'status-line ok';
+                micPermText.textContent = '麦克风权限：已授权 —— 浏览器已记住，之后不会再询问。';
+            } else if (state === 'denied') {
+                micPerm.className = 'status-line err';
+                micPermText.textContent = '麦克风权限：已被拒绝，浏览器不会再弹窗。恢复方法：点地址栏左侧的锁/滑块图标，把"麦克风"改为"允许"，然后刷新本页。';
+            } else if (state === 'prompt') {
+                micPerm.className = 'status-line';
+                micPermText.textContent = '麦克风权限：尚未授权。点击开始时会询问一次，请选"允许"——点"×"关闭不会被记住，下次仍会询问。';
+            } else {
+                micPerm.className = 'status-line';
+                micPermText.textContent = '当前地址：' + location.origin + '（权限状态无法查询，不影响使用）';
+            }
+        }
+
+        async function micErrorAdvice(err) {
+            const state = await queryMicPermission();
+            let msg = '无法访问麦克风：' + err.name + '\n' + (err.message || '') + '\n\n';
+            if (err.name === 'NotAllowedError' && state === 'denied') {
+                msg += '浏览器已记住"拒绝"，不会再弹窗。\n恢复方法：点地址栏左侧的锁/滑块图标，把"麦克风"改为"允许"，然后刷新本页。';
+            } else if (err.name === 'NotAllowedError') {
+                msg += '权限请求被拒绝或被关闭了弹窗。\n下次请在弹窗里点"允许"——点"×"关闭浏览器不会记住，这正是反复询问的原因。';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                msg += '没有检测到可用的麦克风设备，请检查系统声音设置。';
+            } else if (err.name === 'NotReadableError') {
+                msg += '麦克风被其他程序占用（如会议/录音软件），请关闭后重试。';
+            } else {
+                msg += '当前地址：' + location.origin + '（麦克风仅在 https / localhost / 127.0.0.1 可用）。';
+            }
+            return msg;
+        }
+
+        // 连接失败时释放已经拿到的麦克风，避免设备一直被占用
+        function releaseMic() {
+            if (isWsRecording) return;   // 正在录音，交给 stopWsRecording 释放
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+        }
+
+        function nowClock() {
+            const d = new Date();
+            return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+        }
+
+        // ==================== 字幕合并引擎 ====================
+        // 问题：ws_server 每个 600ms chunk 回一次 partial（纯增量，只含新增的字），
+        //       逐条展示会把"骨肉相连"拆成"骨肉/相/连"三条，像分词错误。
+        // 策略：
+        //   partial → 追加进当前"草稿行"（一行持续生长，末尾有闪烁光标）
+        //   停顿超过 0.7 秒没有新消息 → 草稿行固定，下条 partial 另起一行
+        //   草稿行末尾出现标点（。？！，、；：等）→ 立即固定，下条 partial 另起一行
+        //   final   → 整句带标点全文，草稿行作废（删掉），另起"定稿行"
+        //   每行独立时间戳（makeLine 创建行时写入当前时钟）
+        let draft = null;          // 当前草稿行 { el, textEl, texts, committed }
+        let lastMsgTime = 0;
+        const MERGE_GAP_MS = 700;  // 停顿断行阈值（500-800ms 区间内取 700ms）
+        const PUNCT_CHARS = '。？！，、；：.!?,;:';   // 触发立即断行的标点
+
+        function removeEmptyHint() {
+            liveSubtitleContent.querySelectorAll('.sub-empty').forEach(n => n.remove());
+        }
+
+        function makeLine(cls, clock) {
+            const div = document.createElement('div');
+            div.className = 'sub-line ' + cls;
+            const t = document.createElement('span');
+            t.className = 'sub-time';
+            t.textContent = '[' + clock + ']';
+            const s = document.createElement('span');
+            s.className = 'sub-text';
+            div.appendChild(t);
+            div.appendChild(s);
+            liveSubtitleContent.appendChild(div);
+            liveSubtitle.scrollTop = liveSubtitle.scrollHeight;
+            return s;
+        }
+
+        // 把当前草稿行固定下来（升级为定稿样式，并计入复制内容）
+        let lineVerSeq = 0;        // 行内容版本号：让在途的补标点响应失效，防止覆盖新内容
+
+        // 异步给已定稿的行补标点（句子由停顿断行产生，流式增量本身不带标点）。
+        // 失败 / 服务不可用时静默保持原文；不阻塞字幕展示。
+        function requestPunctuate(lineEl) {
+            const idx = lineEl._liveIdx;
+            const raw = liveLines[idx];
+            if (idx === undefined || !raw || !raw.trim()) return;
+            const ver = ++lineVerSeq;
+            lineEl._ver = ver;
+            fetch('/punctuate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: raw })
+            }).then(r => r.json()).then(d => {
+                if (lineEl._ver !== ver || !d || !d.text) return;
+                const t = String(d.text);
+                if (t && t !== raw) {
+                    liveLines[idx] = t;
+                    lineEl.querySelector('.sub-text').textContent = t;
+                }
+            }).catch(() => {});
+        }
+
+        function commitDraft() {
+            if (draft && draft.texts.length && !draft.committed) {
+                const text = draft.texts.join('');
+                if (!text.trim()) {
+                    // 空白草稿（静音噪点漏网的空增量）：直接丢弃，不留空行
+                    draft.el.remove();
+                    draft = null;
+                    return;
+                }
+                draft.committed = true;
+                draft.el.classList.remove('partial');
+                draft.el.classList.add('final-line');
+                liveLines.push(text);
+                draft.el._liveIdx = liveLines.length - 1;
+                // 停顿/标点断行固定的句子：异步补标点（服务端 final 会做整体校准，不怕竞争）
+                if (!endsWithPunct(text)) requestPunctuate(draft.el);
+            }
+        }
+
+        // 判断文本末尾是否以断行标点收尾
+        function endsWithPunct(s) {
+            return !!s && PUNCT_CHARS.includes(s.slice(-1));
+        }
+
+        function handlePartial(text) {
+            text = String(text == null ? '' : text).trim();
+            if (!text) return;   // 空增量（静音噪点）：不建行、不追加，杜绝空行
+            removeEmptyHint();
+            const now = Date.now();
+            const gap = now - lastMsgTime;
+            lastMsgTime = now;
+            // 需要另起一行的三种情况：
+            //   1. 没有草稿行 / 草稿已定稿
+            //   2. 距上一条消息停顿超过 MERGE_GAP_MS（700ms）
+            //   3. 草稿行末尾已是标点（一句话已说完，新内容换行）
+            const draftText = draft ? draft.texts.join('') : '';
+            if (!draft || draft.committed || gap > MERGE_GAP_MS || endsWithPunct(draftText)) {
+                commitDraft();   // 停顿 / 标点收尾 / 已定稿：上一行固定，另起一行
+                const s = makeLine('partial', nowClock());
+                draft = { el: s.parentElement, textEl: s, texts: [text], committed: false };
+            } else {
+                // partial 是纯增量（服务端只发新增的字），直接追加即可；
+                // 注意不能做"包含即去重"——会误删"看看"这类合法的重复字
+                draft.texts.push(text);
+                draft.textEl.textContent = draft.texts.join('');
+            }
+            liveSubtitle.scrollTop = liveSubtitle.scrollHeight;
+        }
+
+        // 忽略标点与空白后归一化，用于 final 与已提交行的对齐比较
+        // （final 带标点、已提交行可能刚补完标点，必须归一化后才能匹配）
+        function cleanForCompare(s) {
+            return String(s == null ? '' : s).replace(/[。？！，、；：.!?,;:\s]/g, '');
+        }
+
+        function handleFinal(text) {
+            removeEmptyHint();
+            text = String(text == null ? '' : text).trim();
+            if (!text) {
+                commitDraft();   // 空 final 只表示一段结束，固定草稿即可
+                return;
+            }
+            commitDraft();   // 先把当前草稿计入 liveLines，再与 final 校准
+
+            // 关键：点"停止"时服务端回送的 final 是【本次录音全文】（一整行带标点）。
+            // 原样追加会与之前的行全部重复并糊成一大行（"长句合并"bug）。
+            // 因此把 final 与已提交内容做"忽略标点对齐"：
+            const finalClean = cleanForCompare(text);
+            const haveClean = cleanForCompare(liveLines.join(''));
+
+            if (finalClean && finalClean === haveClean) {
+                // 正常情况：全文已逐行提交并补过标点，final 无新增信息，直接丢弃
+                return;
+            }
+            if (finalClean && haveClean && finalClean.startsWith(haveClean)) {
+                // 点停止时还在说话：final 比已提交内容多出尾部，并入最后一行
+                let count = 0, cut = -1;
+                for (let i = 0; i < text.length; i++) {
+                    if (count >= haveClean.length) { cut = i; break; }
+                    const ch = text[i];
+                    if (!PUNCT_CHARS.includes(ch) && !/\s/.test(ch)) count++;
+                }
+                const tail = cut >= 0 ? text.slice(cut).trim() : '';
+                const lineEl = liveSubtitleContent.querySelector('.sub-line:last-child');
+                const idx = lineEl ? lineEl._liveIdx : -1;
+                if (tail && lineEl && idx >= 0) {
+                    // 作废该行在途的补标点响应，防止把尾部覆盖掉
+                    lineEl._ver = ++lineVerSeq;
+                    const textEl = lineEl.querySelector('.sub-text');
+                    textEl.textContent = textEl.textContent + tail;
+                    liveLines[idx] = liveLines[idx] + tail;
+                    return;
+                }
+                if (!tail) return;
+            }
+            // 校准失败（异常情况，如与已提交内容对不上）：回退为旧行为，final 单独成行
+            const s = makeLine('final-line', nowClock());
+            s.textContent = text;
+            liveLines.push(text);
+            s.parentElement._liveIdx = liveLines.length - 1;
+            liveSubtitle.scrollTop = liveSubtitle.scrollHeight;
+        }
+
+        async function startWsRecording() {
+            // 0. 前置检查：非安全上下文必然拿不到麦克风（用 file:// 双击打开就是这种情况）
+            if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('当前页面无法使用麦克风。\n\n浏览器只在 https、localhost 或 127.0.0.1 下开放麦克风，\n请改用：http://127.0.0.1:8000/index.html\n（不要双击 index.html 以 file:// 方式打开）');
+                refreshMicPermHint();
+                return;
+            }
+
+            // 1. 先申请麦克风权限
+            //    好处一：趁点击手势仍然有效，权限弹窗更容易正常弹出
+            //    好处二：失败时不会留下一个已连接却用不上的 WebSocket
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        channelCount: 1,
+                        sampleRate: 16000,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    }
+                });
+            } catch (err) {
+                mediaStream = null;
+                await refreshMicPermHint();
+                alert(await micErrorAdvice(err));
+                return;
+            }
+            // 授权成功后立刻回显状态，让用户确认"浏览器已经记住了"
+            refreshMicPermHint();
+
+            // 2. 建立 WebSocket 连接
+            try {
+                ws = new WebSocket(wsStreamUrl());
+                ws.binaryType = 'arraybuffer';
+            } catch (e) {
+                releaseMic();
+                setWsStatus('无法连接流式识别服务：' + e.message, 'err');
+                return;
+            }
+
+            ws.onopen = async () => {
+                // 不再在 onopen 里立刻推流：服务端模型可能是首次加载（约 1 分钟），
+                // 这期间推流会让音频积压、字幕严重滞后。等收到 ready 再启动音频管线。
+                setWsStatus('已连接，正在准备模型…', '');
+                startWsBtn.style.display = 'none';
+                stopWsBtn.style.display = 'inline-flex';
+                liveSubtitle.style.display = 'block';
+                document.getElementById('liveActions').style.display = 'flex';
+                liveSubtitleContent.innerHTML = '<div class="sub-empty">模型加载完成后即可开始说话</div>';
+                isWsRecording = true;
+            };
+
+            // 收到服务端 ready（模型已就绪）后才启动音频管线
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'ready') {
+                        startAudioPipeline();
+                    } else if (data.type === 'partial' && data.text) {
+                        handlePartial(data.text);
+                        setWsStatus('正在录音，实时出字幕', 'ok');
+                    } else if (data.type === 'status') {
+                        // 流式模型按需加载：首个连接时服务端会先发这条提示
+                        setWsStatus(data.message || '正在加载模型…', '');
+                    } else if (data.type === 'final') {
+                        handleFinal(data.text);
+                        setWsStatus('本段识别完成，可继续说话', 'ok');
+                    } else if (data.type === 'error') {
+                        setWsStatus('服务端错误：' + (data.message || ''), 'err');
+                    }
+                } catch (e) {
+                    console.error('解析消息失败:', e);
+                }
+            };
+
+            ws.onerror = () => {
+                setWsStatus('连接错误，请确认 ws_server.py 已启动（端口 8001）', 'err');
+                releaseMic();
+            };
+
+            ws.onclose = () => {
+                if (isWsRecording) setWsStatus('连接已断开', 'err');
+                releaseMic();
+            };
+        }
+
+        // 启动音频采集管线：等服务端模型就绪（ready 消息）后调用，麦克风已在前置步骤拿到
+        async function startAudioPipeline() {
+            if (!isWsRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+            setWsStatus('模型已就绪，正在录音…', 'ok');
+            liveSubtitleContent.innerHTML = '<div class="sub-empty">字幕将实时显示在这里</div>';
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+            try {
+                await audioContext.audioWorklet.addModule('audio-processor.js');
+            } catch (err) {
+                setWsStatus('无法加载 audio-processor.js：' + err.message, 'err');
+                stopWsRecording();
+                return;
+            }
+
+            const source = audioContext.createMediaStreamSource(mediaStream);
+            audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+
+            // 把每个 600ms 音频块转 PCM16 后经 WebSocket 发送
+            audioWorkletNode.port.onmessage = (event) => {
+                if (!isWsRecording || !ws || ws.readyState !== WebSocket.OPEN) return;
+                const float32Data = event.data;
+                const pcm16 = new Int16Array(float32Data.length);
+                for (let i = 0; i < float32Data.length; i++) {
+                    const s = Math.max(-1, Math.min(1, float32Data[i]));
+                    pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                }
+                ws.send(pcm16.buffer);
+            };
+
+            source.connect(audioWorkletNode);
+            // 经 0 增益节点连到输出，保证 worklet 被驱动且不产生回声
+            const muteGain = audioContext.createGain();
+            muteGain.gain.value = 0;
+            audioWorkletNode.connect(muteGain);
+            muteGain.connect(audioContext.destination);
+
+            // 发送开始配置
+            ws.send(JSON.stringify({
+                mode: '2pass',
+                wav_name: 'microphone',
+                wav_format: 'pcm',
+                is_speaking: true,
+                chunk_size: [0, 10, 5]
+            }));
+        }
+
+        function stopWsRecording() {
+            isWsRecording = false;
+
+            // 固定当前草稿行（随后服务端回送的 final 会与已有行做对齐校准，不会重复）
+            commitDraft();
+
+            // 发送结束标志，服务端会回送最终完整结果
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ is_speaking: false }));
+                setTimeout(() => { if (ws && ws.readyState === WebSocket.OPEN) ws.close(); }, 800);
+            }
+
+            // 停止音频采集
+            if (audioWorkletNode) { audioWorkletNode.disconnect(); audioWorkletNode = null; }
+            if (audioContext) { audioContext.close(); audioContext = null; }
+            if (mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; }
+
+            startWsBtn.style.display = 'inline-flex';
+            stopWsBtn.style.display = 'none';
+            setWsStatus('已停止', '');
+            refreshMicPermHint();   // 停止后刷新，确认权限已被浏览器记住
+        }
+
+        function copyLive(btn) {
+            if (!liveLines.length) { alert('还没有字幕内容'); return; }
+            navigator.clipboard.writeText(liveLines.join('\n')).then(() => {
+                btn.innerHTML = '<svg class="icon"><use href="#icon-check"/></svg>已复制';
+                setTimeout(() => { btn.innerHTML = '<svg class="icon"><use href="#icon-copy"/></svg>复制全部字幕'; }, 2000);
+            });
+        }
+
+        function clearLive() {
+            liveLines = [];
+            draft = null;
+            lastMsgTime = 0;
+            liveSubtitleContent.innerHTML = '<div class="sub-empty">字幕将实时显示在这里</div>';
+            liveSubtitle.style.display = 'none';
+            document.getElementById('liveActions').style.display = 'none';
+        }
+
+        // ==================== 语音问答（RAG 知识库 + Agent） ====================
+        // 会话 ID：存在 localStorage，同一个浏览器标签页连续提问会带上上下文，
+        // 所以"它怎么用？"这类省略主语的追问也能答对。清了缓存就换个新会话。
+        let qaSessionId = (() => {
+            try {
+                let s = localStorage.getItem('funasr_qa_session');
+                if (!s) {
+                    s = 's' + Math.random().toString(36).slice(2, 10);
+                    localStorage.setItem('funasr_qa_session', s);
+                }
+                return s;
+            } catch (e) { return 's' + Math.random().toString(36).slice(2, 10); }
+        })();
+        let qaMediaRecorder = null;     // 浏览器录音器
+        let qaChunks = [];              // 录音数据块
+        let qaStream = null;            // 麦克风音频流（停止时要手动关，否则麦克风灯一直亮）
+
+        const qaStatusBox = document.getElementById('qaStatus');
+        const qaStatusText = document.getElementById('qaStatusText');
+        const qaResultBox = document.getElementById('qaResult');
+
+        function qaSetStatus(text, cls) {
+            if (!text) { qaStatusBox.style.display = 'none'; return; }
+            qaStatusBox.style.display = '';
+            qaStatusBox.className = 'status-line ' + (cls || 'wait');
+            qaStatusText.textContent = text;
+        }
+
+        // ---------------- 知识库 ----------------
+        async function refreshKbStatus() {
+            try {
+                const d = await (await fetch('/knowledge_list')).json();
+                const el = document.getElementById('kbStatus');
+                if (!d.ready || !d.total_chunks) {
+                    el.textContent = '空知识库 —— 先上传资料，再提问';
+                    document.getElementById('kbList').innerHTML = '';
+                    return;
+                }
+                el.textContent = `已入库 ${d.sources.length} 个文档 · 共 ${d.total_chunks} 块`;
+                document.getElementById('kbList').innerHTML = d.sources.map(s =>
+                    `<div class="qa-kb-item"><span>${escapeHtml(s.source)}</span><span class="mono-val">${s.chunks} 块</span></div>`
+                ).join('');
+            } catch (e) {
+                document.getElementById('kbStatus').textContent = '知识库状态获取失败';
+            }
+        }
+
+        function pickKnowledgeFile() {
+            const input = document.getElementById('kbFile');
+            input.value = '';                       // 先清空，保证选同一个文件也能触发 change
+            input.click();
+        }
+
+        document.getElementById('kbFile').addEventListener('change', (e) => {
+            document.getElementById('kbFileName').value = e.target.files[0] ? e.target.files[0].name : '';
+        });
+
+        async function uploadKnowledge() {
+            const input = document.getElementById('kbFile');
+            const file = input.files[0];
+            if (!file) { alert('请先点击「选择文档」'); return; }
+            const btn = document.getElementById('kbUploadBtn');
+            btn.disabled = true;
+            qaSetStatus('正在切块并向量化…（首次使用需加载向量模型，约 10~60 秒）', 'wait');
+            try {
+                const fd = new FormData();          // 传文件必须用 FormData，不能用 URLSearchParams
+                fd.append('file', file);
+                fd.append('source_name', file.name);
+                const d = await (await fetch('/upload_knowledge', { method: 'POST', body: fd })).json();
+                if (d.code === 0) {
+                    qaSetStatus(`已入库「${file.name}」：切成 ${d.chunks} 个知识块`, 'ok');
+                    document.getElementById('kbFileName').value = '';
+                    input.value = '';
+                    refreshKbStatus();
+                } else {
+                    qaSetStatus('入库失败：' + d.error, 'err');
+                }
+            } catch (e) {
+                qaSetStatus('入库失败：' + e.message, 'err');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function addKnowledgeText() {
+            const text = document.getElementById('kbText').value.trim();
+            const name = document.getElementById('kbTextName').value.trim() || '手动输入';
+            if (!text) { alert('请先粘贴内容'); return; }
+            qaSetStatus('正在入库…', 'wait');
+            try {
+                const fd = new FormData();
+                fd.append('text', text);
+                fd.append('source_name', name);
+                const d = await (await fetch('/knowledge_text', { method: 'POST', body: fd })).json();
+                if (d.code === 0) {
+                    qaSetStatus(`已入库「${name}」：${d.chunks} 个知识块`, 'ok');
+                    document.getElementById('kbText').value = '';
+                    refreshKbStatus();
+                } else {
+                    qaSetStatus('入库失败：' + d.error, 'err');
+                }
+            } catch (e) {
+                qaSetStatus('入库失败：' + e.message, 'err');
+            }
+        }
+
+        async function resetKnowledge() {
+            if (!confirm('确定清空整个知识库吗？此操作不可恢复，需要重新上传资料。')) return;
+            const fd = new FormData();
+            const d = await (await fetch('/knowledge_reset', { method: 'POST', body: fd })).json();
+            qaSetStatus(d.message || '已清空', 'ok');
+            refreshKbStatus();
+        }
+
+        // ---------------- 提问：录音 ----------------
+        async function toggleQaRecord() {
+            const btn = document.getElementById('qaRecBtn');
+
+            // 正在录音 → 这一下是"停止并提问"
+            if (qaMediaRecorder && qaMediaRecorder.state === 'recording') {
+                qaMediaRecorder.stop();
+                btn.classList.remove('qa-recording');
+                btn.innerHTML = '识别中…';
+                btn.disabled = true;
+                return;
+            }
+
+            // 否则开始录音
+            try {
+                qaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (e) {
+                alert('无法访问麦克风：' + e.message + '\n请用 http://127.0.0.1:8000 或 localhost 打开本页面（浏览器只允许安全上下文使用麦克风）。');
+                return;
+            }
+            qaChunks = [];
+            // 优先 opus/webm（体积小、识别友好）；浏览器不支持就让它自己挑格式
+            const mime = (window.MediaRecorder && MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
+                ? 'audio/webm;codecs=opus' : '';
+            try {
+                qaMediaRecorder = mime ? new MediaRecorder(qaStream, { mimeType: mime }) : new MediaRecorder(qaStream);
+            } catch (e) {
+                alert('当前浏览器不支持录音：' + e.message);
+                qaStream.getTracks().forEach(t => t.stop());
+                return;
+            }
+            qaMediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size) qaChunks.push(e.data); };
+            qaMediaRecorder.onstop = async () => {
+                const type = (qaChunks[0] && qaChunks[0].type) || 'audio/webm';
+                const blob = new Blob(qaChunks, { type });
+                qaStream.getTracks().forEach(t => t.stop());     // 关麦克风，指示灯灭
+                qaStream = null;
+                // 扩展名要和真实编码一致，否则 ffmpeg 解码会失败
+                const ext = type.includes('webm') ? '.webm'
+                    : type.includes('ogg') ? '.ogg'
+                    : type.includes('mp4') ? '.m4a' : '.wav';
+                if (blob.size < 2000) {
+                    alert('录音太短了，请按住说一句完整的话（1 秒以上）');
+                    btn.innerHTML = '<svg class="icon"><use href="#icon-mic"/></svg>录音提问';
+                    btn.disabled = false;
+                    return;
+                }
+                await askByAudio(blob, 'qa_record' + ext, '录音提问');
+                btn.innerHTML = '<svg class="icon"><use href="#icon-mic"/></svg>录音提问';
+                btn.disabled = false;
+            };
+            qaMediaRecorder.start();
+            btn.classList.add('qa-recording');
+            btn.innerHTML = '停止并提问';
+            qaSetStatus('正在录音… 说完点「停止并提问」', 'wait');
+        }
+
+        function qaPickFile() {
+            const input = document.getElementById('qaAudioFile');
+            input.accept = 'audio/*,video/*';
+            input.value = '';
+            input.click();
+        }
+
+        document.getElementById('qaAudioFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) await askByAudio(file, file.name, '文件提问');
+        });
+
+        // ---------------- 提问：上传音频走 /voice_qa ----------------
+        async function askByAudio(blobOrFile, filename, label) {
+            const askBtn = document.getElementById('qaRecBtn');
+            qaSetStatus((label || '语音') + '：正在识别…', 'wait');
+            try {
+                const fd = new FormData();
+                fd.append('file', blobOrFile, filename);
+                fd.append('session_id', qaSessionId);
+                fd.append('hotword', document.getElementById('qaHotword').value.trim());
+                const resp = await fetch('/voice_qa', { method: 'POST', body: fd });
+                const d = await resp.json();
+                if (d.code !== 0) { qaSetStatus('失败：' + (d.error || '未知错误'), 'err'); return; }
+                if (!d.question) { qaSetStatus(d.answer || '没有识别到语音', 'err'); return; }
+                qaSetStatus('', '');
+                renderQaResult(d);
+            } catch (e) {
+                qaSetStatus('请求失败：' + e.message, 'err');
+            } finally {
+                if (askBtn) askBtn.disabled = false;
+            }
+        }
+
+        // ---------------- 提问：打字走 /qa_ask ----------------
+        async function askText() {
+            const q = document.getElementById('qaText').value.trim();
+            if (!q) { alert('请输入问题'); return; }
+            qaSetStatus('正在检索并生成回答…', 'wait');
+            try {
+                const fd = new FormData();
+                fd.append('question', q);
+                fd.append('session_id', qaSessionId);
+                const d = await (await fetch('/qa_ask', { method: 'POST', body: fd })).json();
+                if (d.code !== 0) { qaSetStatus('失败：' + (d.error || '未知错误'), 'err'); return; }
+                qaSetStatus('', '');
+                document.getElementById('qaText').value = '';
+                renderQaResult(d);
+            } catch (e) {
+                qaSetStatus('请求失败：' + e.message, 'err');
+            }
+        }
+
+        function renderQaResult(d) {
+            qaResultBox.className = 'result show';
+            const t = [];
+            if (d.asr_ms) t.push(`识别 ${d.asr_ms}ms`);
+            if (d.rag_ms !== undefined) t.push(`检索 ${d.rag_ms}ms`);
+            if (d.llm_ms !== undefined) t.push(`生成 ${d.llm_ms}ms`);
+            t.push(d.used_llm ? '大模型作答' : '未走大模型');
+            document.getElementById('qaMeta').textContent = t.join(' · ');
+
+            // 热词纠错明细（识别到的人名/专名被自动纠正时提示一下，避免用户以为是识别错了）
+            let fixLine = '';
+            if (d.fixes && d.fixes.length) {
+                const uniq = [...new Set(d.fixes.map(f => `${f.from} → ${f.to}`))];
+                fixLine = `<div class="qa-question" style="border:none;padding-bottom:0;">热词校正：${escapeHtml(uniq.join('，'))}</div>`;
+            }
+
+            document.getElementById('qaAnswerText').innerHTML =
+                `<div class="qa-question">问：${escapeHtml(d.question || '')}</div>` + fixLine +
+                `<div class="qa-answer">${escapeHtml(d.answer || '')}</div>`;
+
+            const hits = d.hits || [];
+            document.getElementById('qaHits').innerHTML = hits.length
+                ? `<div class="result-head" style="margin-top:14px;"><span class="result-label">检索到的资料（前 3 条）</span></div>` +
+                  hits.map(h => `<div class="qa-hit"><b>${escapeHtml(h.source)}</b> · 相似度 ${h.score}<br>${escapeHtml(h.text)}</div>`).join('')
+                : '';
+        }
+
+        // ---------------- 大模型配置 ----------------
+        async function refreshQaConfig() {
+            try {
+                const d = await (await fetch('/qa_config')).json();
+                if (d.model) document.getElementById('llmModel').value = d.model;
+                if (d.base_url) document.getElementById('llmBase').value = d.base_url;
+                document.getElementById('llmStatusText').textContent = d.has_key
+                    ? `已配置：${d.model}（Key ${d.key_tail}）· 配置文件 ${d.config_path}`
+                    : '尚未配置 API Key —— 未配置时只能返回检索到的资料原文，不会调用大模型。';
+            } catch (e) { /* 配置读取失败不打扰用户 */ }
+        }
+
+        async function saveLlmConfig() {
+            const fd = new FormData();
+            fd.append('api_key', document.getElementById('llmKey').value.trim());
+            fd.append('model', document.getElementById('llmModel').value.trim());
+            fd.append('base_url', document.getElementById('llmBase').value.trim());
+            const d = await (await fetch('/qa_config', { method: 'POST', body: fd })).json();
+            document.getElementById('llmKey').value = '';
+            refreshQaConfig();
+            qaSetStatus(d.has_key ? '大模型已配置完成，可以直接提问了' : 'Key 为空，未保存', d.has_key ? 'ok' : 'error');
+        }
+    </script>
+</body>
+</html>

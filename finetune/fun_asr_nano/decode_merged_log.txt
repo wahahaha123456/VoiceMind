@@ -1,0 +1,100 @@
+[decode_ft] 基线解码（未加载微调权重）: C:/Users/iiiis/Desktop/FunASR/finetune/fun_asr_nano/outputs_merged
+funasr version: 1.4.14.
+Check update of funasr, and it would cost few times. You may disable it by set `disable_update=True` in AutoModel
+New version is available: 1.4.15.
+Please use the command "pip install -U funasr" to upgrade.
+[2026-09-17 12:14:30,430][root][INFO] - download models from model hub: ms
+[2026-09-17 12:14:30,448][root][WARNING] - trust_remote_code: True
+Loading remote code failed: ./model.py, No module named 'ctc'
+[2026-09-17 12:14:43,325][root][INFO] - rank: 0, model is builded.
+[2026-09-17 12:14:43,325][root][INFO] - Loading pretrained params from C:/Users/iiiis/Desktop/FunASR/finetune/fun_asr_nano/outputs_merged\model.pt
+[2026-09-17 12:14:43,332][root][INFO] - ckpt: C:/Users/iiiis/Desktop/FunASR/finetune/fun_asr_nano/outputs_merged\model.pt
+[2026-09-17 12:14:46,780][root][INFO] - scope_map: ['module.', 'None']
+[2026-09-17 12:14:46,783][root][INFO] - excludes: None
+[2026-09-17 12:14:50,217][root][INFO] - Loading ckpt: C:/Users/iiiis/Desktop/FunASR/finetune/fun_asr_nano/outputs_merged\model.pt, status: <All keys matched successfully>
+[2026-09-17 12:14:53,952][root][INFO] - Building VAD model.
+[2026-09-17 12:14:53,954][root][INFO] - download models from model hub: ms
+2026-09-17 12:14:54,579 | INFO    | modelscope_hub.download | Downloading 8 files from iic/speech_fsmn_vad_zh-cn-16k-common-pytorch@master
+Downloading:   0%|          | 0/8 [00:00<?, ?file/s]Downloading: 100%|██████████| 8/8 [00:00<00:00, 940.66file/s]
+[2026-09-17 12:14:54,614][root][WARNING] - trust_remote_code: False
+[2026-09-17 12:14:54,644][root][INFO] - Loading pretrained params from C:\Users\iiiis\.cache\modelscope\models\iic--speech_fsmn_vad_zh-cn-16k-common-pytorch\snapshots\master\model.pt
+[2026-09-17 12:14:54,646][root][INFO] - ckpt: C:\Users\iiiis\.cache\modelscope\models\iic--speech_fsmn_vad_zh-cn-16k-common-pytorch\snapshots\master\model.pt
+[2026-09-17 12:14:54,660][root][INFO] - scope_map: ['module.', 'None']
+[2026-09-17 12:14:54,660][root][INFO] - excludes: None
+[2026-09-17 12:14:54,661][root][INFO] - Loading ckpt: C:\Users\iiiis\.cache\modelscope\models\iic--speech_fsmn_vad_zh-cn-16k-common-pytorch\snapshots\master\model.pt, status: <All keys matched successfully>
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.38it/s]{'load_data': '0.012', 'extract_feat': '0.070', 'forward': '0.296', 'batch_size': '1', 'rtf': '0.080'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.38it/s]rtf_avg: 0.080: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.38it/s]                                                                                          rtf_avg: 0.080: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.35it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.05it/s][A
+{'load_data': '0.000', 'extract_feat': '0.005', 'forward': '0.956', 'batch_size': '1', 'rtf': '0.257'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.05it/s][A
+rtf_avg: 0.257: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.05it/s]                                                                                          [Artf_avg: 0.257: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.04it/s]
+100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.04it/s]rtf_avg: 0.257, time_speech:  3.726, time_escape: 0.958: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.04it/s]rtf_avg: 0.257, time_speech:  3.726, time_escape: 0.958: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.04it/s]
+20260912_121741_001	Everything here can be controlled by voice or app.
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.004', 'extract_feat': '0.013', 'forward': '0.093', 'batch_size': '1', 'rtf': '0.004'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.77it/s]rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.64it/s]                                                                                          rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.64it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/4 [00:00<?, ?it/s][A
+ 25%|[34m██▌       [0m| 1/4 [00:00<00:00,  4.65it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.215', 'batch_size': '1', 'rtf': '0.171'}, :  25%|[34m██▌       [0m| 1/4 [00:00<00:00,  4.65it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.215', 'batch_size': '1', 'rtf': '0.171'}, :  50%|[34m█████     [0m| 2/4 [00:00<00:00,  3.08it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.400', 'batch_size': '1', 'rtf': '0.113'}, :  50%|[34m█████     [0m| 2/4 [00:00<00:00,  3.08it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.400', 'batch_size': '1', 'rtf': '0.113'}, :  75%|[34m███████▌  [0m| 3/4 [00:01<00:00,  2.39it/s][A
+{'load_data': '0.000', 'extract_feat': '0.003', 'forward': '0.530', 'batch_size': '1', 'rtf': '0.123'}, :  75%|[34m███████▌  [0m| 3/4 [00:01<00:00,  2.39it/s][A
+{'load_data': '0.000', 'extract_feat': '0.003', 'forward': '0.530', 'batch_size': '1', 'rtf': '0.123'}, : 100%|[34m██████████[0m| 4/4 [00:01<00:00,  1.89it/s][A
+{'load_data': '0.000', 'extract_feat': '0.004', 'forward': '0.699', 'batch_size': '1', 'rtf': '0.123'}, : 100%|[34m██████████[0m| 4/4 [00:01<00:00,  1.89it/s][A
+rtf_avg: 0.124: 100%|[34m██████████[0m| 4/4 [00:01<00:00,  1.89it/s]                                                                                          [Artf_avg: 0.124: 100%|[34m██████████[0m| 4/4 [00:01<00:00,  2.16it/s]
+100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.85s/it]rtf_avg: 0.075, time_speech:  24.610, time_escape: 1.849: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.85s/it]rtf_avg: 0.075, time_speech:  24.610, time_escape: 1.849: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.85s/it]
+VID_20231014_180338_001	我以前科科挂科，现在我想好好学习。 好啊。 那老人说，看他怎么说。 那我要做楚哥了，对不起，我是他谁服你啊？
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.003', 'extract_feat': '0.007', 'forward': '0.047', 'batch_size': '1', 'rtf': '0.004'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 21.63it/s]rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 21.63it/s]                                                                                          rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 21.14it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:01<00:00,  1.52s/it][A
+{'load_data': '0.000', 'extract_feat': '0.006', 'forward': '1.522', 'batch_size': '1', 'rtf': '0.131'}, : 100%|[34m██████████[0m| 1/1 [00:01<00:00,  1.52s/it][A
+rtf_avg: 0.131: 100%|[34m██████████[0m| 1/1 [00:01<00:00,  1.52s/it]                                                                                          [Artf_avg: 0.131: 100%|[34m██████████[0m| 1/1 [00:01<00:00,  1.52s/it]
+100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.53s/it]rtf_avg: 0.131, time_speech:  11.650, time_escape: 1.525: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.53s/it]rtf_avg: 0.131, time_speech:  11.650, time_escape: 1.525: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.53s/it]
+VID_20231014_180338_002	别用学生会的放开他的同学校园霸凌了是吧？结果同学刚说话了，找人让他补考，我要跟他处分，处分你学生会的。
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.004', 'extract_feat': '0.006', 'forward': '0.052', 'batch_size': '1', 'rtf': '0.004'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 19.55it/s]rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 19.55it/s]                                                                                          rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 19.16it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.18it/s][A
+{'load_data': '0.000', 'extract_feat': '0.007', 'forward': '0.848', 'batch_size': '1', 'rtf': '0.061'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.18it/s][A
+rtf_avg: 0.061: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.18it/s]                                                                                          [Artf_avg: 0.061: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  1.17it/s]
+100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.17it/s]rtf_avg: 0.061, time_speech:  13.881, time_escape: 0.852: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.17it/s]rtf_avg: 0.061, time_speech:  13.881, time_escape: 0.852: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  1.17it/s]
+20260909_225539_001	停水停电通知桥梁纽带宣传公寓规定组织文明评比反馈学生建议这是层长岗位职责
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.004', 'extract_feat': '0.011', 'forward': '0.089', 'batch_size': '1', 'rtf': '0.003'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 11.16it/s]rtf_avg: 0.003: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 11.16it/s]                                                                                          rtf_avg: 0.003: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 11.03it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/4 [00:00<?, ?it/s][A
+ 25%|[34m██▌       [0m| 1/4 [00:00<00:00,  3.78it/s][A
+{'load_data': '0.000', 'extract_feat': '0.001', 'forward': '0.265', 'batch_size': '1', 'rtf': '0.192'}, :  25%|[34m██▌       [0m| 1/4 [00:00<00:00,  3.78it/s][A
+{'load_data': '0.000', 'extract_feat': '0.001', 'forward': '0.265', 'batch_size': '1', 'rtf': '0.192'}, :  50%|[34m█████     [0m| 2/4 [00:00<00:00,  3.86it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.254', 'batch_size': '1', 'rtf': '0.170'}, :  50%|[34m█████     [0m| 2/4 [00:00<00:00,  3.86it/s][A
+{'load_data': '0.000', 'extract_feat': '0.002', 'forward': '0.254', 'batch_size': '1', 'rtf': '0.170'}, :  75%|[34m███████▌  [0m| 3/4 [00:00<00:00,  3.10it/s][A
+{'load_data': '0.000', 'extract_feat': '0.003', 'forward': '0.397', 'batch_size': '1', 'rtf': '0.077'}, :  75%|[34m███████▌  [0m| 3/4 [00:00<00:00,  3.10it/s][A
+{'load_data': '0.000', 'extract_feat': '0.003', 'forward': '0.397', 'batch_size': '1', 'rtf': '0.077'}, : 100%|[34m██████████[0m| 4/4 [00:01<00:00,  2.14it/s][A
+{'load_data': '0.000', 'extract_feat': '0.007', 'forward': '0.690', 'batch_size': '1', 'rtf': '0.068'}, : 100%|[34m██████████[0m| 4/4 [00:01<00:00,  2.14it/s][A
+rtf_avg: 0.088: 100%|[34m██████████[0m| 4/4 [00:01<00:00,  2.14it/s]                                                                                          [Artf_avg: 0.088: 100%|[34m██████████[0m| 4/4 [00:01<00:00,  2.49it/s]
+100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.61s/it]rtf_avg: 0.063, time_speech:  25.490, time_escape: 1.611: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.61s/it]rtf_avg: 0.063, time_speech:  25.490, time_escape: 1.611: 100%|[31m██████████[0m| 1/1 [00:01<00:00,  1.61s/it]
+VID_20231014_180338_000	我知道你我哥哥请好，我要听导员亲口说。 什么意思？你上来晒太阳的。 给我个机会。 怎么给机会？
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.003', 'extract_feat': '0.003', 'forward': '0.018', 'batch_size': '1', 'rtf': '0.005'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 52.64it/s]rtf_avg: 0.005: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 52.64it/s]                                                                                          rtf_avg: 0.005: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 52.64it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.21it/s][A
+{'load_data': '0.000', 'extract_feat': '0.003', 'forward': '0.311', 'batch_size': '1', 'rtf': '0.082'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.21it/s][A
+rtf_avg: 0.082: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.21it/s]                                                                                          [Artf_avg: 0.082: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  3.20it/s]
+100%|[31m██████████[0m| 1/1 [00:00<00:00,  3.16it/s]rtf_avg: 0.083, time_speech:  3.800, time_escape: 0.314: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  3.16it/s]rtf_avg: 0.083, time_speech:  3.800, time_escape: 0.314: 100%|[31m██████████[0m| 1/1 [00:00<00:00,  3.16it/s]
+20260904_223022_000	你是一个大肥猫。
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]100%|[34m██████████[0m| 1/1 [00:00<00:00,  9.50it/s]{'load_data': '0.004', 'extract_feat': '0.014', 'forward': '0.106', 'batch_size': '1', 'rtf': '0.004'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00,  9.50it/s]rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  9.50it/s]                                                                                          rtf_avg: 0.004: 100%|[34m██████████[0m| 1/1 [00:00<00:00,  9.40it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.12s/it][A
+{'load_data': '0.000', 'extract_feat': '0.013', 'forward': '2.123', 'batch_size': '1', 'rtf': '0.071'}, : 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.12s/it][A
+rtf_avg: 0.071: 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.12s/it]                                                                                          [Artf_avg: 0.071: 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.13s/it]
+100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.13s/it]rtf_avg: 0.071, time_speech:  29.899, time_escape: 2.128: 100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.13s/it]rtf_avg: 0.071, time_speech:  29.899, time_escape: 2.128: 100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.13s/it]
+20260909_225539_000	安全卫生巡查检查违规电器与公共区域卫生，消除隐患人员信息管理核实住宿名单，关注晚归及外来人员矛盾协调与突发事件处理，调解作息纠纷，及时上报疾病、火情等紧急情况，
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s]{'load_data': '0.004', 'extract_feat': '0.012', 'forward': '0.092', 'batch_size': '1', 'rtf': '0.003'}, : 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.82it/s]rtf_avg: 0.003: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.82it/s]                                                                                          rtf_avg: 0.003: 100%|[34m██████████[0m| 1/1 [00:00<00:00, 10.82it/s]
+  0%|[31m          [0m| 0/1 [00:00<?, ?it/s]
+  0%|[34m          [0m| 0/1 [00:00<?, ?it/s][A
+100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.30s/it][A
+{'load_data': '0.000', 'extract_feat': '0.013', 'forward': '2.298', 'batch_size': '1', 'rtf': '0.087'}, : 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.30s/it][A
+rtf_avg: 0.087: 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.30s/it]                                                                                          [Artf_avg: 0.087: 100%|[34m██████████[0m| 1/1 [00:02<00:00,  2.30s/it]
+100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.30s/it]rtf_avg: 0.087, time_speech:  26.544, time_escape: 2.302: 100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.30s/it]rtf_avg: 0.087, time_speech:  26.544, time_escape: 2.302: 100%|[31m██████████[0m| 1/1 [00:02<00:00,  2.30s/it]
+20260912_121741_000	Hello everyone. Welcome back to our podcast, a mark. And I'm Ava. Today we have 

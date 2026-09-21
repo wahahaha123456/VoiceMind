@@ -1,0 +1,37 @@
+{
+  "tag": "finetuned",
+  "model": "C:/Users/iiiis/Desktop/FunASR/finetune/fun_asr_nano/outputs_aishell_merged",
+  "n_sample": 80,
+  "conditions": {
+    "clean": {
+      "cer": 0.020104895104895104,
+      "sent_acc": 0.8125,
+      "n": 80,
+      "sec": 28.730306148529053
+    },
+    "slow": {
+      "cer": 0.020104895104895104,
+      "sent_acc": 0.8,
+      "n": 80,
+      "sec": 26.8109769821167
+    },
+    "fast": {
+      "cer": 0.017482517482517484,
+      "sent_acc": 0.825,
+      "n": 80,
+      "sec": 26.869768857955933
+    },
+    "pitch": {
+      "cer": 0.020104895104895104,
+      "sent_acc": 0.8125,
+      "n": 80,
+      "sec": 26.697920322418213
+    },
+    "noise": {
+      "cer": 0.04807692307692308,
+      "sent_acc": 0.6875,
+      "n": 80,
+      "sec": 27.143540382385254
+    }
+  }
+}

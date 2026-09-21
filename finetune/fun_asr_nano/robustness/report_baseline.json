@@ -1,0 +1,37 @@
+{
+  "tag": "baseline",
+  "model": "C:/Users/iiiis/.cache/modelscope/models/FunAudioLLM--Fun-ASR-Nano-2512/snapshots/master",
+  "n_sample": 80,
+  "conditions": {
+    "clean": {
+      "cer": 0.0236013986013986,
+      "sent_acc": 0.8,
+      "n": 80,
+      "sec": 33.50885605812073
+    },
+    "slow": {
+      "cer": 0.03583916083916084,
+      "sent_acc": 0.725,
+      "n": 80,
+      "sec": 33.551015853881836
+    },
+    "fast": {
+      "cer": 0.027097902097902096,
+      "sent_acc": 0.7875,
+      "n": 80,
+      "sec": 33.07210612297058
+    },
+    "pitch": {
+      "cer": 0.027097902097902096,
+      "sent_acc": 0.775,
+      "n": 80,
+      "sec": 30.695749044418335
+    },
+    "noise": {
+      "cer": 0.06118881118881119,
+      "sent_acc": 0.65,
+      "n": 80,
+      "sec": 70.48259353637695
+    }
+  }
+}

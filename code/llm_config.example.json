@@ -1,0 +1,11 @@
+{
+  "provider": "deepseek",
+  "api_key": "sk-在这里填入你的APIKey",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-chat",
+  "temperature": 0.2,
+  "max_tokens": 800,
+  "timeout": 60,
+  "history_turns": 3,
+  "top_k": 3
+}
